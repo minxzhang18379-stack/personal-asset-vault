@@ -60,12 +60,35 @@ export function AssetProvider({ children }) {
     refreshAuditLogs();
   };
 
-  // 主访问密码哈希摘要管理 (SHA-256 带盐存储，防 LocalStorage 明文泄露)
-  const [masterPasswordHash, setMasterPasswordHash] = useState(() => {
-    return localStorage.getItem('ASSET_VAULT_MASTER_PASSWORD_HASH') || DEFAULT_ADMIN_HASH;
+  // 多用户独立账号与独立密码存储表 (每个账号拥有独一无二的专属 SHA-256 哈希散列密码)
+  const [userAccounts, setUserAccounts] = useState(() => {
+    try {
+      const saved = localStorage.getItem('ASSET_VAULT_USER_ACCOUNTS_V3');
+      if (saved) return JSON.parse(saved);
+    } catch (e) {}
+    return [
+      {
+        id: 'usr-1',
+        name: 'Minx Zhang',
+        username: 'minxzhang',
+        email: 'minxzhang18379@gmail.com',
+        role: 'master',
+        roleName: '主超级管理员',
+        passwordHash: DEFAULT_ADMIN_HASH // 当前用户的专属密码散列
+      },
+      {
+        id: 'usr-2',
+        name: 'Family Member',
+        username: 'family',
+        email: 'family@assetvault.com',
+        role: 'family',
+        roleName: '家庭共享成员',
+        passwordHash: DEFAULT_ADMIN_HASH
+      }
+    ];
   });
 
-  // 当前登录成员与安全角色
+  // 当前登录成员
   const [currentUser, setCurrentUser] = useState(() => {
     try {
       const savedUser = localStorage.getItem('ASSET_VAULT_CURRENT_USER');
@@ -74,34 +97,74 @@ export function AssetProvider({ children }) {
     return {
       id: 'usr-1',
       name: 'Minx Zhang',
+      username: 'minxzhang',
       email: 'minxzhang18379@gmail.com',
       role: 'master',
       roleName: '主超级管理员',
-      avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80'
+      passwordHash: DEFAULT_ADMIN_HASH
     };
   });
 
+  // 保存并更新账号列表到 LocalStorage
+  const saveAccountsList = (updatedList) => {
+    setUserAccounts(updatedList);
+    localStorage.setItem('ASSET_VAULT_USER_ACCOUNTS_V3', JSON.stringify(updatedList));
+  };
+
+  // 修改当前登录用户的专属个人密码
   const handleChangePassword = async (oldPass, newPass) => {
-    const isOldValid = await verifyPasswordHash(oldPass, masterPasswordHash);
+    const userPassHash = currentUser?.passwordHash || DEFAULT_ADMIN_HASH;
+    const isOldValid = await verifyPasswordHash(oldPass, userPassHash);
     if (!isOldValid) {
-      logAction('PASSWORD_CHANGE', '修改主守护密码尝试失败：原旧密码校验错误', 'FAILED');
-      throw new Error('原旧密码校验错误，请输入正确的当前密码');
+      logAction('PASSWORD_CHANGE', `修改账户【${currentUser?.name}】专属密码失败：旧密码校验错误`, 'FAILED');
+      throw new Error('原旧密码校验错误，请输入当前账户正确的专属密码');
     }
     if (!newPass || newPass.length < 4) {
       throw new Error('新密码长度不能少于 4 位字符');
     }
     const newHash = await hashPassword(newPass);
-    setMasterPasswordHash(newHash);
-    localStorage.setItem('ASSET_VAULT_MASTER_PASSWORD_HASH', newHash);
-    localStorage.removeItem('ASSET_VAULT_MASTER_PASSWORD'); // 清理历史明文
-    logAction('PASSWORD_CHANGE', '成功修改金库主守护密码 (更新 SHA-256 哈希摘要)', 'SUCCESS');
+    const updatedProfile = { ...currentUser, passwordHash: newHash };
+    setCurrentUser(updatedProfile);
+    localStorage.setItem('ASSET_VAULT_CURRENT_USER', JSON.stringify(updatedProfile));
+
+    // 同步更新 userAccounts 列表对应用户密码
+    const updatedAccounts = userAccounts.map(acc => 
+      acc.id === currentUser.id ? updatedProfile : acc
+    );
+    saveAccountsList(updatedAccounts);
+
+    logAction('PASSWORD_CHANGE', `成功为账户【${currentUser?.name} <${currentUser?.email}>】更新专属安全密码 (SHA-256)`, 'SUCCESS');
     return true;
   };
 
+  // 更新账号资料
   const handleUpdateUser = (updatedProfile) => {
     const newProfile = { ...currentUser, ...updatedProfile };
     setCurrentUser(newProfile);
     localStorage.setItem('ASSET_VAULT_CURRENT_USER', JSON.stringify(newProfile));
+
+    const updatedAccounts = userAccounts.map(acc => 
+      acc.id === currentUser.id ? newProfile : acc
+    );
+    saveAccountsList(updatedAccounts);
+  };
+
+  // 新增独立成员账号
+  const handleAddUserAccount = async (newAccountData) => {
+    const initialHash = await hashPassword(newAccountData.password || '123456');
+    const newAcc = {
+      id: `usr-${Date.now()}`,
+      name: newAccountData.name.trim(),
+      username: newAccountData.username?.trim() || newAccountData.name.trim().toLowerCase(),
+      email: newAccountData.email.trim(),
+      role: newAccountData.role || 'family',
+      roleName: newAccountData.role === 'master' ? '主超级管理员' : newAccountData.role === 'family' ? '家庭共享成员' : '只读访客模式',
+      passwordHash: initialHash
+    };
+    const newList = [...userAccounts, newAcc];
+    saveAccountsList(newList);
+    logAction('SECURITY_AUTH', `金库成功登记开通新成员账号【${newAcc.name} <${newAcc.email}>】角色:${newAcc.roleName}`, 'SUCCESS');
+    return newAcc;
   };
 
   // 鉴权保护
@@ -224,34 +287,53 @@ export function AssetProvider({ children }) {
   }, [assets, consumables]);
 
   const login = async (usernameOrEmail, password) => {
-    // 智能解析输入的账号与邮箱关联双向绑定
-    if (usernameOrEmail && usernameOrEmail.trim()) {
-      const inputStr = usernameOrEmail.trim();
-      const isEmailInput = inputStr.includes('@');
-      if (isEmailInput) {
-        handleUpdateUser({ 
-          email: inputStr, 
-          name: currentUser?.name || inputStr.split('@')[0] 
-        });
-      } else {
-        handleUpdateUser({ 
-          name: inputStr,
-          email: currentUser?.email || `${inputStr.toLowerCase().replace(/\s+/g, '')}@gmail.com`
-        });
-      }
+    if (!usernameOrEmail || !usernameOrEmail.trim()) {
+      throw new Error('请输入登录账号或邮箱');
+    }
+    const inputStr = usernameOrEmail.trim().toLowerCase();
+
+    // 在多用户存储表中查找匹配账号或邮箱
+    let targetUser = userAccounts.find(acc => 
+      (acc.username && acc.username.toLowerCase() === inputStr) ||
+      (acc.name && acc.name.toLowerCase() === inputStr) ||
+      (acc.email && acc.email.toLowerCase() === inputStr)
+    );
+
+    // 如果未预置该账号，自动初始化为专属独立账号
+    if (!targetUser) {
+      const isEmail = inputStr.includes('@');
+      const newAccName = isEmail ? inputStr.split('@')[0] : usernameOrEmail.trim();
+      const newAccEmail = isEmail ? inputStr : `${inputStr.replace(/\s+/g, '')}@gmail.com`;
+      
+      const userHash = await hashPassword(password);
+      targetUser = {
+        id: `usr-${Date.now()}`,
+        name: newAccName,
+        username: newAccName.toLowerCase(),
+        email: newAccEmail,
+        role: 'master',
+        roleName: '主超级管理员',
+        passwordHash: userHash
+      };
+      const updatedList = [...userAccounts, targetUser];
+      setUserAccounts(updatedList);
+      localStorage.setItem('ASSET_VAULT_USER_ACCOUNTS_V3', JSON.stringify(updatedList));
     }
 
-    // 校验密码
-    const passToCheck = password !== undefined ? password : usernameOrEmail;
-    const isValid = await verifyPasswordHash(passToCheck, masterPasswordHash);
+    // 校验该特定账户专属的独立 SHA-256 密码哈希摘要
+    const userPassHash = targetUser.passwordHash || DEFAULT_ADMIN_HASH;
+    const isValid = await verifyPasswordHash(password, userPassHash);
+
     if (isValid) {
+      setCurrentUser(targetUser);
+      localStorage.setItem('ASSET_VAULT_CURRENT_USER', JSON.stringify(targetUser));
       setIsAuthenticated(true);
       localStorage.setItem('ASSET_VAULT_AUTH', 'true');
-      const boundUserStr = `${currentUser?.name || usernameOrEmail} <${currentUser?.email || '已绑定邮箱'}>`;
-      logAction('AUTH_LOGIN', `关联账户【${boundUserStr}】成功通过安全校验解锁进入金库`, 'SUCCESS');
+      logAction('AUTH_LOGIN', `独立账户【${targetUser.name} <${targetUser.email}>】校验专属独立密码成功，解锁进入金库`, 'SUCCESS');
       return true;
     }
-    logAction('AUTH_LOGIN', `解密失败：账户【${usernameOrEmail || '未知用户'}】密码校验错误`, 'FAILED');
+
+    logAction('AUTH_LOGIN', `解密失败：账户【${targetUser.name} <${targetUser.email}>】专属独立密码校验错误`, 'FAILED');
     return false;
   };
 
@@ -280,13 +362,14 @@ export function AssetProvider({ children }) {
     handleResetData,
     handleClearAllData,
     refreshData,
-    masterPasswordHash,
+    userAccounts,
+    handleAddUserAccount,
     handleChangePassword,
     currentUser,
     handleUpdateUser,
     auditLogs,
     refreshAuditLogs
-  }), [assets, consumables, allItems, locations, categories, loading, stats, masterPasswordHash, currentUser, auditLogs]);
+  }), [assets, consumables, allItems, locations, categories, loading, stats, userAccounts, currentUser, auditLogs]);
 
   // 2. UI Store Payload
   const uiValue = useMemo(() => ({

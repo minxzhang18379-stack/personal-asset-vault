@@ -178,24 +178,31 @@ export default function UserSecurityModal({ isOpen, onClose }) {
             </div>
           </form>
 
-          {/* 模块 2: 修改主守护密码 (Master Lock Password) */}
+          {/* 模块 2: 修改专属独立密码 (Per-User Independent Password) */}
           <form onSubmit={onSubmitPassword} className="space-y-4">
-            <h3 className="text-xs font-extrabold uppercase text-slate-400 tracking-wider flex items-center gap-2">
-              <KeyRound className="w-4 h-4 text-amber-400" />
-              修改金库主守护密码
+            <h3 className="text-xs font-extrabold uppercase text-slate-400 tracking-wider flex items-center justify-between">
+              <span className="flex items-center gap-2">
+                <KeyRound className="w-4 h-4 text-amber-400" />
+                修改当前账户【{currentUser?.name || '管理员'}】专属独立密码
+              </span>
+              <span className="px-2 py-0.5 rounded text-[10px] bg-amber-500/10 text-amber-300 border border-amber-500/20">
+                一户一密 · 独享散列
+              </span>
             </h3>
 
             <div className="p-4 rounded-2xl bg-slate-900/60 border border-slate-800 space-y-4">
               {/* 旧密码 */}
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1.5">当前原守护密码</label>
+                <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+                  输入【{currentUser?.name}】当前原专属密码
+                </label>
                 <div className="relative">
                   <input
                     type={showPass ? 'text' : 'password'}
                     value={oldPassword}
                     onChange={(e) => setOldPassword(e.target.value)}
                     required
-                    placeholder="输入当前原守护密码"
+                    placeholder="输入当前账户的原专属密码"
                     className="w-full bg-slate-950 border border-slate-800 rounded-xl pl-3.5 pr-10 py-2 text-sm text-white focus:outline-none focus:border-amber-500 font-mono"
                   />
                   <button
