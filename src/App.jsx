@@ -224,22 +224,37 @@ function MainAppContent() {
               </nav>
             </div>
 
-            <div className="space-y-1 border-t border-slate-800/80 pt-4">
-              <button
-                onClick={() => setIsSettingsOpen(true)}
-                className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold text-slate-400 hover:text-white hover:bg-slate-900 transition-colors"
-              >
-                <Settings className="w-4 h-4 text-slate-400" />
-                <span>系统设置</span>
-              </button>
-
-              <button
-                onClick={logout}
-                className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold text-rose-400/90 hover:text-rose-300 hover:bg-rose-500/10 transition-colors"
-              >
-                <LogOut className="w-4 h-4" />
-                <span>退出登录</span>
-              </button>
+            {/* 侧边栏左下角: 用户信息与 Settings/Logout 纯图标组件 */}
+            <div className="border-t border-slate-800/80 pt-4 flex items-center justify-between px-1">
+              <div className="flex items-center gap-2.5 min-w-0">
+                <div className="w-8 h-8 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 flex items-center justify-center font-bold text-xs shrink-0">
+                  {currentUser?.name ? currentUser.name[0].toUpperCase() : 'U'}
+                </div>
+                <div className="flex flex-col text-left min-w-0">
+                  <span className="text-xs font-bold text-slate-200 truncate max-w-[90px]">
+                    {currentUser?.name || '管理员'}
+                  </span>
+                  <span className="text-[10px] text-slate-500 truncate max-w-[90px]">
+                    {currentUser?.email || ''}
+                  </span>
+                </div>
+              </div>
+              <div className="flex items-center gap-1 shrink-0">
+                <button
+                  onClick={() => setIsSettingsOpen(true)}
+                  className="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-900 border border-slate-800 transition-colors"
+                  title="系统设置"
+                >
+                  <Settings className="w-4 h-4" />
+                </button>
+                <button
+                  onClick={logout}
+                  className="p-2 rounded-xl text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 border border-slate-800 transition-colors"
+                  title="退出登录"
+                >
+                  <LogOut className="w-4 h-4" />
+                </button>
+              </div>
             </div>
           </aside>
 
