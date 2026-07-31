@@ -6,8 +6,8 @@
 
 import { LocalMockService } from './mockDataService';
 
-const USE_CLOUDFLARE_WORKER = false;
-const WORKER_BASE_URL = '/api';
+const USE_CLOUDFLARE_WORKER = true;
+const WORKER_BASE_URL = 'https://personal-asset-vault.minxzhang18379.workers.dev/api';
 
 /**
  * 统一 API 客户端服务对象
