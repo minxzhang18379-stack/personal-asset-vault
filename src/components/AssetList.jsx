@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useAssets } from '../context/AssetContext';
 import { 
-  Search, Filter, Plus, LayoutGrid, List, Tag, MapPin, Box, Settings, PackageOpen,
+  Search, Filter, Plus, LayoutGrid, List, Tag, MapPin, Box, Settings, PackageOpen, Flame,
   Eye, Edit3, Trash2, Calendar, ShieldCheck, FileText, Image as ImageIcon,
   Smartphone, Tablet, Laptop, Monitor, Tv, Gamepad2, Headphones, Speaker, Camera, Watch, Cpu, HardDrive, Printer, Wifi,
   Car, Bike, Plane, Ship, Fuel,
