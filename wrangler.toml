@@ -1,0 +1,18 @@
+name = "personal-asset-vault"
+main = "src/api/worker.js"
+compatibility_date = "2024-06-01"
+
+# Cloudflare D1 数据库绑定
+[[d1_databases]]
+binding = "DB"
+database_name = "asset-vault-db"
+database_id = "your-d1-database-id" # 运行 wrangler d1 create asset-vault-db 后替换
+
+# Cloudflare R2 对象存储绑定 (存储发票、照片凭证)
+[[r2_buckets]]
+binding = "BUCKET"
+bucket_name = "asset-vault-media"
+
+[vars]
+JWT_SECRET = "asset_vault_super_secret_key_2026"
+AUTH_PASSWORD = "admin" # 默认防护密码，部署后可在环境变量中覆盖
