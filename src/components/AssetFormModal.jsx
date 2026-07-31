@@ -150,13 +150,10 @@ export default function AssetFormModal() {
             />
           </div>
 
-          {/* 资产图标选择器 (自定义 Apple SF 图标) */}
+          {/* 资产图标选择器 */}
           <div>
             <div className="flex items-center justify-between mb-1.5">
-              <label className="block text-xs font-semibold text-slate-300">资产图标 (自定义 Apple SF 风格图标)</label>
-              <span className="text-[11px] text-cyan-400 font-medium">
-                {formData.icon ? `已选择：${formData.icon}` : '智能自动匹配'}
-              </span>
+              <label className="block text-xs font-semibold text-slate-300">资产图标</label>
             </div>
             <div className="grid grid-cols-7 gap-2 bg-slate-900/60 p-2.5 rounded-2xl border border-slate-800">
               {ICON_OPTIONS.map(opt => {
