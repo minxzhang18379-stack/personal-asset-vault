@@ -5,14 +5,16 @@ import AssetList from './components/AssetList';
 import ConsumablesTracker from './components/ConsumablesTracker';
 import LocationManager from './components/LocationManager';
 import AnalyticsView from './components/AnalyticsView';
+import ExpenseView from './components/ExpenseView';
 import AssetDetailModal from './components/AssetDetailModal';
 import AssetFormModal from './components/AssetFormModal';
+import ExpenseFormModal from './components/ExpenseFormModal';
 import SettingsModal from './components/SettingsModal';
 import UserSecurityModal from './components/UserSecurityModal';
 import AuditLogModal from './components/AuditLogModal';
 import PasswordRecoveryModal from './components/PasswordRecoveryModal';
 import { 
-  LayoutDashboard, Package, Box, MapPin, BarChart3, 
+  LayoutDashboard, Package, Box, MapPin, BarChart3, CreditCard,
   Settings, Lock, Search, ShieldCheck, Diamond, Sparkles, LogOut, Menu, X, AlertCircle, User, ShieldAlert, LogIn, RefreshCw 
 } from 'lucide-react';
 
@@ -44,6 +46,7 @@ function MainAppContent() {
     { key: 'dashboard', label: '财务大盘', icon: LayoutDashboard },
     { key: 'assets', label: '资产档案', icon: Box, badge: stats?.assetCount || 0 },
     { key: 'consumables', label: '快消耗材', icon: Package, badge: stats?.consumableCount || 0 },
+    { key: 'expenses', label: '开销统计', icon: CreditCard },
     { key: 'locations', label: '空间收纳', icon: MapPin },
     { key: 'analytics', label: '财务分析', icon: BarChart3 },
   ];
@@ -256,6 +259,7 @@ function MainAppContent() {
             {activeTab === 'dashboard' && <Dashboard />}
             {activeTab === 'assets' && <AssetList />}
             {activeTab === 'consumables' && <ConsumablesTracker />}
+            {activeTab === 'expenses' && <ExpenseView />}
             {activeTab === 'locations' && <LocationManager />}
             {activeTab === 'analytics' && <AnalyticsView />}
           </main>
@@ -265,6 +269,7 @@ function MainAppContent() {
       {/* 全局弹窗 Mount 点 (独立放置于根，绝不受 CSS layout/form 影响) */}
       <AssetDetailModal />
       <AssetFormModal />
+      <ExpenseFormModal />
       <SettingsModal />
       <UserSecurityModal 
         isOpen={isSecurityModalOpen} 

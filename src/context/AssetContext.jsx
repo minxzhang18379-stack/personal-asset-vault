@@ -44,6 +44,7 @@ export function AssetProvider({ children }) {
   const [detailAsset, setDetailAsset] = useState(null);
   const [editingAsset, setEditingAsset] = useState(null);
   const [editingConsumable, setEditingConsumable] = useState(null);
+  const [editingExpense, setEditingExpense] = useState(null);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isSecurityModalOpen, setIsSecurityModalOpen] = useState(false);
   const [isAuditLogOpen, setIsAuditLogOpen] = useState(false);
@@ -238,6 +239,58 @@ export function AssetProvider({ children }) {
     saveAccountsList(newList);
     logAction('SECURITY_AUTH', `金库成功登记开通新成员账号【${newAcc.name} <${newAcc.email}>】角色:${newAcc.roleName}`, 'SUCCESS');
     return newAcc;
+  };
+
+  // ================= 账单开销模块 State & 方法 =================
+  const [expenses, setExpenses] = useState(() => {
+    try {
+      const saved = localStorage.getItem('ASSET_VAULT_EXPENSES_V1');
+      if (saved) return JSON.parse(saved);
+    } catch (e) {}
+    return [
+      { id: 'exp-1', title: 'iCloud 200GB 扩容订阅', amount: 21, category: '订阅服务', date: '2026-07-01', recurring: true, notes: '每月自动扣款' },
+      { id: 'exp-2', title: '山姆会员店快销品采购', amount: 680, category: '耗材补给', date: '2026-07-05', recurring: false, notes: '咖啡胶囊与洗护用品' },
+      { id: 'exp-3', title: '主卧智能音响与智控软装', amount: 1290, category: '固定资产', date: '2026-07-12', recurring: false, notes: '硬件数码升级' },
+      { id: 'exp-4', title: '网络宽带与云服务器续费', amount: 128, category: '房屋水电', date: '2026-07-15', recurring: true, notes: '千兆光纤月租' },
+      { id: 'exp-5', title: '家庭周末聚餐饮食消费', amount: 560, category: '日常消费', date: '2026-07-20', recurring: false, notes: '餐饮支出' },
+      { id: 'exp-6', title: 'Apple Music 家庭共享包月', amount: 15, category: '订阅服务', date: '2026-07-25', recurring: true, notes: '音乐订阅' },
+      { id: 'exp-7', title: '上月电费网费结算', amount: 240, category: '房屋水电', date: '2026-06-28', recurring: true, notes: '夏季空调开销' },
+      { id: 'exp-8', title: '日用护肤品补货', amount: 1680, category: '耗材补给', date: '2026-06-15', recurring: false, notes: '神仙水与补水面膜' }
+    ];
+  });
+
+  const saveExpensesList = (newList) => {
+    setExpenses(newList);
+    localStorage.setItem('ASSET_VAULT_EXPENSES_V1', JSON.stringify(newList));
+  };
+
+  const handleSaveExpense = (item) => {
+    if (item.id) {
+      const updated = expenses.map(e => e.id === item.id ? { ...e, ...item } : e);
+      saveExpensesList(updated);
+      logAction('EXPENSE_UPDATE', `更新账单开销记录【${item.title}】¥${item.amount}`, 'SUCCESS');
+    } else {
+      const newItem = {
+        id: `exp-${Date.now()}`,
+        title: item.title,
+        amount: Number(item.amount) || 0,
+        category: item.category || '日常消费',
+        date: item.date || new Date().toISOString().slice(0, 10),
+        recurring: !!item.recurring,
+        notes: item.notes || ''
+      };
+      saveExpensesList([newItem, ...expenses]);
+      logAction('EXPENSE_ADD', `新增账单开销【${newItem.title}】金额: ¥${newItem.amount}`, 'SUCCESS');
+    }
+  };
+
+  const handleDeleteExpense = (id) => {
+    const target = expenses.find(e => e.id === id);
+    const filtered = expenses.filter(e => e.id !== id);
+    saveExpensesList(filtered);
+    if (target) {
+      logAction('EXPENSE_DELETE', `删除开销账单【${target.title}】金额: ¥${target.amount}`, 'WARNING');
+    }
   };
 
   // 鉴权保护
@@ -437,6 +490,9 @@ export function AssetProvider({ children }) {
 
   // 1. Data Store Payload
   const dataValue = useMemo(() => ({
+    expenses,
+    handleSaveExpense,
+    handleDeleteExpense,
     assets,
     consumables,
     allItems,
@@ -462,7 +518,7 @@ export function AssetProvider({ children }) {
     handleUpdateUser,
     auditLogs,
     refreshAuditLogs
-  }), [assets, consumables, allItems, locations, categories, loading, stats, userAccounts, currentUser, auditLogs]);
+  }), [expenses, assets, consumables, allItems, locations, categories, loading, stats, userAccounts, currentUser, auditLogs]);
 
   // 2. UI Store Payload
   const uiValue = useMemo(() => ({
@@ -482,6 +538,8 @@ export function AssetProvider({ children }) {
     setEditingAsset,
     editingConsumable,
     setEditingConsumable,
+    editingExpense,
+    setEditingExpense,
     isSettingsOpen,
     setIsSettingsOpen,
     isSecurityModalOpen,
@@ -495,7 +553,7 @@ export function AssetProvider({ children }) {
     logout
   }), [
     activeTab, searchQuery, selectedCategory, selectedLocationId, theme,
-    detailAsset, editingAsset, editingConsumable, isSettingsOpen, isSecurityModalOpen, isAuditLogOpen, isRecoveryOpen, isAuthenticated
+    detailAsset, editingAsset, editingConsumable, editingExpense, isSettingsOpen, isSecurityModalOpen, isAuditLogOpen, isRecoveryOpen, isAuthenticated
   ]);
 
   return (
