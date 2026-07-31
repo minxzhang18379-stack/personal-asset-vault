@@ -353,6 +353,7 @@ export function AssetProvider({ children }) {
       throw new Error('请输入登录账号或邮箱');
     }
     const inputStr = usernameOrEmail.trim().toLowerCase();
+    const cleanPassword = password ? password.trim() : '';
 
     // 在多用户存储表中查找匹配账号或邮箱
     let targetUser = userAccounts.find(acc => 
@@ -367,7 +368,7 @@ export function AssetProvider({ children }) {
       const newAccName = isEmail ? inputStr.split('@')[0] : usernameOrEmail.trim();
       const newAccEmail = isEmail ? inputStr : `${inputStr.replace(/\s+/g, '')}@gmail.com`;
       
-      const userHash = await hashPassword(password);
+      const userHash = await hashPassword(cleanPassword);
       targetUser = {
         id: `usr-${Date.now()}`,
         name: newAccName,
@@ -384,7 +385,11 @@ export function AssetProvider({ children }) {
 
     // 校验该特定账户专属的独立 SHA-256 密码哈希摘要
     const userPassHash = targetUser.passwordHash || DEFAULT_ADMIN_HASH;
-    const isValid = await verifyPasswordHash(password, userPassHash);
+    let isValid = await verifyPasswordHash(cleanPassword, userPassHash);
+    if (!isValid && password !== cleanPassword) {
+      // 容错备选原始未 trim 密码
+      isValid = await verifyPasswordHash(password, userPassHash);
+    }
 
     if (isValid) {
       setCurrentUser(targetUser);

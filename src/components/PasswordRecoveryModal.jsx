@@ -81,6 +81,9 @@ export default function PasswordRecoveryModal({ isOpen, onClose }) {
             <input
               type="text"
               required
+              autoCapitalize="none"
+              autoCorrect="off"
+              spellCheck="false"
               value={accountInput}
               onChange={(e) => { setAccountInput(e.target.value); setErrorMsg(''); }}
               placeholder=""
@@ -94,6 +97,9 @@ export default function PasswordRecoveryModal({ isOpen, onClose }) {
             <input
               type="password"
               required
+              autoCapitalize="none"
+              autoCorrect="off"
+              spellCheck="false"
               value={recoveryKey}
               onChange={(e) => { setRecoveryKey(e.target.value); setErrorMsg(''); }}
               placeholder=""

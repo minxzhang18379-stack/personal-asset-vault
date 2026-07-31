@@ -73,6 +73,9 @@ function MainAppContent() {
                 <input
                   type="text"
                   required
+                  autoCapitalize="none"
+                  autoCorrect="off"
+                  spellCheck="false"
                   value={usernameInput}
                   onChange={e => {
                     setUsernameInput(e.target.value);
@@ -92,6 +95,9 @@ function MainAppContent() {
                 <input
                   type="password"
                   required
+                  autoCapitalize="none"
+                  autoCorrect="off"
+                  spellCheck="false"
                   value={passwordInput}
                   onChange={e => {
                     setPasswordInput(e.target.value);
