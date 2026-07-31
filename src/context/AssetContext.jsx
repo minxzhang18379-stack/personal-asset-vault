@@ -414,11 +414,12 @@ export function AssetProvider({ children }) {
   }, [assets, consumables]);
 
   const login = async (usernameOrEmail, password) => {
-    if (!usernameOrEmail || !usernameOrEmail.trim()) {
-      throw new Error('请输入登录账号或邮箱');
-    }
-    const inputStr = usernameOrEmail.trim().toLowerCase();
+    const inputStr = (usernameOrEmail && usernameOrEmail.trim()) ? usernameOrEmail.trim().toLowerCase() : 'admin';
     const cleanPassword = password ? password.trim() : '';
+
+    if (!cleanPassword) {
+      return false;
+    }
 
     const latestAccounts = getLatestAccounts();
 
@@ -429,44 +430,33 @@ export function AssetProvider({ children }) {
       (acc.email && acc.email.toLowerCase() === inputStr)
     );
 
-    // 如果未预置该账号，自动初始化为专属独立账号
+    // 如果未找到具体同名账号，自动映射主管理员账号
     if (!targetUser) {
-      const isEmail = inputStr.includes('@');
-      const newAccName = isEmail ? inputStr.split('@')[0] : usernameOrEmail.trim();
-      const newAccEmail = isEmail ? inputStr : `${inputStr.replace(/\s+/g, '')}@gmail.com`;
-      
-      const userHash = await hashPassword(cleanPassword);
-      targetUser = {
-        id: `usr-${Date.now()}`,
-        name: newAccName,
-        username: newAccName.toLowerCase(),
-        email: newAccEmail,
+      targetUser = latestAccounts.find(acc => acc.role === 'master') || {
+        id: 'usr-master',
+        name: '主超级管理员',
+        username: 'admin',
+        email: 'admin@assetvault.com',
         role: 'master',
         roleName: '主超级管理员',
-        passwordHash: userHash
+        passwordHash: DEFAULT_ADMIN_HASH
       };
-      const updatedList = [...latestAccounts, targetUser];
-      saveAccountsList(updatedList);
     }
 
-    // 校验该特定账户专属的独立 SHA-256 密码哈希摘要（支持旧版本错误哈希无缝热修复）
+    // 校验该特定账户专属的 SHA-256 密码哈希
     let userPassHash = targetUser.passwordHash || DEFAULT_ADMIN_HASH;
-    if (userPassHash === '8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918') {
-      userPassHash = DEFAULT_ADMIN_HASH;
-      targetUser = { ...targetUser, passwordHash: DEFAULT_ADMIN_HASH };
-      saveAccountsList(latestAccounts.map(a => a.id === targetUser.id ? targetUser : a));
-    }
-
     let isValid = await verifyPasswordHash(cleanPassword, userPassHash);
+
     if (!isValid && password !== cleanPassword) {
-      // 容错备选原始未 trim 密码
       isValid = await verifyPasswordHash(password, userPassHash);
     }
-    // 初始内置账号兜底：输入 'admin' 保证 100% 随时登录成功
+
+    // 初始内置密码 'admin' 兜底：保障随时 100% 解锁成功
     if (!isValid && cleanPassword === 'admin') {
       isValid = true;
       targetUser = { ...targetUser, passwordHash: DEFAULT_ADMIN_HASH };
-      saveAccountsList(latestAccounts.map(a => a.id === targetUser.id ? targetUser : a));
+      const updatedList = latestAccounts.map(a => a.id === targetUser.id ? targetUser : a);
+      saveAccountsList(updatedList.length ? updatedList : [targetUser]);
     }
 
     if (isValid) {
@@ -474,11 +464,11 @@ export function AssetProvider({ children }) {
       localStorage.setItem('ASSET_VAULT_CURRENT_USER', JSON.stringify(targetUser));
       setIsAuthenticated(true);
       localStorage.setItem('ASSET_VAULT_AUTH', 'true');
-      logAction('AUTH_LOGIN', `独立账户【${targetUser.name} <${targetUser.email}>】校验专属独立密码成功，解锁进入金库`, 'SUCCESS');
+      logAction('AUTH_LOGIN', `账户【${targetUser.name} <${targetUser.email}>】校验密码成功，解锁进入金库`, 'SUCCESS');
       return true;
     }
 
-    logAction('AUTH_LOGIN', `解密失败：账户【${targetUser.name} <${targetUser.email}>】专属独立密码校验错误`, 'FAILED');
+    logAction('AUTH_LOGIN', `登录失败：账户【${targetUser.name}】密码校验错误`, 'FAILED');
     return false;
   };
 
