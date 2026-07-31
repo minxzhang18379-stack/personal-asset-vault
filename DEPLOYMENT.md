@@ -1,36 +1,36 @@
-# 🌩️ Cloudflare 部署与上线指引 (Cloudflare Deployment Guide)
+# Cloudflare 部署指南 (Deployment Guide)
 
-本指南详细介绍了如何将 **个人资产管理系统 (Personal Asset Vault)** 部署到 **Cloudflare 免费平台 (Pages + Workers + D1 Database + R2 Object Storage)**。
-
----
-
-## 📋 准备工作
-
-1. 注册并登录 [Cloudflare 官网](https://dash.cloudflare.com/) 账号。
-2. 安装 Node.js (v18+) 及 npm 环境。
+本文档说明如何将个人资产管理系统部署至 Cloudflare 平台 (Pages + Workers + D1 Database + R2 Object Storage)。
 
 ---
 
-## 🛠️ 步骤 1: 登录 Cloudflare CLI (Wrangler)
+## 准备工作
 
-在项目根目录下打开终端，运行以下命令完成 Cloudflare CLI 授权认证：
+1. 注册并登录 Cloudflare 账号。
+2. 确保本地安装 Node.js (v18+) 环境。
+
+---
+
+## 部署步骤
+
+### 1. 登录 Wrangler CLI
 
 ```bash
 npx wrangler login
 ```
-终端会弹出浏览器窗口，点击 **Allow / 授权** 即可完成登录。
+系统将自动打开浏览器授权页面，确认授权完成登录。
 
 ---
 
-## 🗄️ 步骤 2: 创建 Cloudflare D1 数据库
+### 2. 创建 D1 数据库
 
-运行以下命令在 Cloudflare 边缘创建 D1 SQLite 数据库：
+运行以下命令创建 D1 SQLite 数据库：
 
 ```bash
 npx wrangler d1 create asset-vault-db
 ```
 
-命令执行成功后，终端会打印如下绑定提示信息：
+命令完成后，控制台将输出类似如下信息：
 
 ```toml
 [[d1_databases]]
@@ -39,25 +39,25 @@ database_name = "asset-vault-db"
 database_id = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
 ```
 
-👉 **拷贝提示中的 `database_id`，粘贴替换项目根目录下 [wrangler.toml](file:///Volumes/SANDISK%20ELE/Manage%20mine%20property/wrangler.toml) 文件中的 `database_id` 属性。**
+复制输出结果中的 `database_id`，更新到项目根目录下的 `wrangler.toml` 文件中。
 
 ---
 
-## 📜 步骤 3: 初始化数据库 Schema
+### 3. 初始化数据库 Schema
 
-运行以下脚本，将数据库建表脚本 [schema.sql](file:///Volumes/SANDISK%20ELE/Manage%20mine%20property/schema.sql) 同步到云端 Cloudflare D1 数据库：
+同步数据库建表文件 `schema.sql` 至 Cloudflare D1：
 
 ```bash
 npm run d1:init
 ```
 
-系统会自动创建 `assets`, `consumables`, `locations`, `asset_attachments`, `asset_logs` 5 张表格。
+脚本将创建应用所需的数据表。
 
 ---
 
-## 📦 步骤 4: 创建 Cloudflare R2 对象存储 (存储发票/图片)
+### 4. 创建 R2 存储桶
 
-运行以下命令创建保存资产图片与凭证文件的 R2 Bucket：
+运行以下命令创建用于存放附件与图片的 R2 Bucket：
 
 ```bash
 npx wrangler r2 bucket create asset-vault-media
@@ -65,36 +65,31 @@ npx wrangler r2 bucket create asset-vault-media
 
 ---
 
-## ⚡ 步骤 5: 部署 Backend API 到 Cloudflare Workers
+### 5. 部署 API 服务 (Cloudflare Workers)
 
-运行命令部署后端 Worker API (Hono 框架)：
+运行以下命令部署基于 Hono 的 Worker API：
 
 ```bash
 npm run deploy
 ```
 
-部署完成后，终端会显示部署好的 API 访问域名（例如：`https://personal-asset-vault.<your-subdomain>.workers.dev`）。
+发布完成后，命令行将输出 Worker 的访问入口 URL。
 
 ---
 
-## 🚀 步骤 6: 部署 Frontend 到 Cloudflare Pages
+### 6. 构建并部署前端 (Cloudflare Pages)
 
-运行以下构建与发布命令：
+编译前端打包文件并发布至 Cloudflare Pages：
 
 ```bash
-# 1. 编译前端静态产物 dist
 npm run build
-
-# 2. 发布至 Cloudflare Pages
 npx wrangler pages deploy dist --project-name=personal-asset-vault
 ```
 
-发布完成后，Cloudflare Pages 会自动分发 CDN，并生成专属域名（例如 `https://personal-asset-vault.pages.dev`）。
+发布成功后将获得 Pages 分发域名（例如 `https://personal-asset-vault.pages.dev`）。
 
 ---
 
-## 🔒 步骤 7: 设置防护与安全密码
+### 7. 环境配置
 
-系统默认密码为 `admin`。部署完成后，您可以通过 Cloudflare Workers 控制台的环境变量 (Environment Variables) 更改 `AUTH_PASSWORD` 和 `JWT_SECRET`，确保数据安全！
-
-祝您使用愉快！
+初始系统登录密码为 `admin`。部署完成后，可通过 Cloudflare Workers 控制台的环境变量设置修改 `AUTH_PASSWORD` 及 `JWT_SECRET` 配置项。
