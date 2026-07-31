@@ -62,6 +62,13 @@ export default function Dashboard() {
         </div>
         <div className="flex items-center gap-2.5">
           <button
+            onClick={() => setIsSettingsOpen(true)}
+            className="p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-slate-300 hover:text-white hover:border-slate-700 transition-all"
+            title="系统设置"
+          >
+            <Settings className="w-4 h-4 text-slate-400" />
+          </button>
+          <button
             onClick={() => setEditingAsset({})}
             className="flex items-center gap-2 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white px-4 py-2.5 rounded-xl font-semibold text-xs transition-all shadow-md shadow-cyan-600/20 active:scale-[0.98]"
           >
