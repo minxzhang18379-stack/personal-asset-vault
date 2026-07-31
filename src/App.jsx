@@ -149,13 +149,6 @@ function MainAppContent() {
             </div>
             <div className="flex items-center gap-2">
               <button
-                onClick={() => setIsSettingsOpen(true)}
-                className="p-2 rounded-xl text-slate-300 hover:bg-slate-800 border border-slate-800 transition-colors"
-                title="系统设置"
-              >
-                <Settings className="w-5 h-5 text-slate-400" />
-              </button>
-              <button
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
                 className="p-2 rounded-xl text-slate-300 hover:bg-slate-800 border border-slate-800 transition-colors"
               >
