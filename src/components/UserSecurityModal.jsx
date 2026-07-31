@@ -6,7 +6,7 @@ import {
 } from 'lucide-react';
 
 export default function UserSecurityModal({ isOpen, onClose }) {
-  const { masterPassword, handleChangePassword, currentUser, handleUpdateUser, showToast } = useAssets();
+  const { masterPasswordHash, handleChangePassword, currentUser, handleUpdateUser, showToast } = useAssets();
 
   // 密码修改表单状态
   const [oldPassword, setOldPassword] = useState('');

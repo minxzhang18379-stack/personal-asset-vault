@@ -232,11 +232,11 @@ export function AssetProvider({ children }) {
     handleResetData,
     handleClearAllData,
     refreshData,
-    masterPassword,
+    masterPasswordHash,
     handleChangePassword,
     currentUser,
     handleUpdateUser
-  }), [assets, consumables, allItems, locations, categories, loading, stats, masterPassword, currentUser]);
+  }), [assets, consumables, allItems, locations, categories, loading, stats, masterPasswordHash, currentUser]);
 
   // 2. UI Store Payload
   const uiValue = useMemo(() => ({
