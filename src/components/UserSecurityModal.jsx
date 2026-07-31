@@ -53,11 +53,11 @@ export default function UserSecurityModal({ isOpen, onClose }) {
 
     try {
       await handleChangePassword(oldPassword, newPassword);
-      setPassSuccess('密码已成功重置修改！全站 SHA-256 加密即刻生效。');
+      setPassSuccess('重置成功');
       setOldPassword('');
       setNewPassword('');
       setConfirmPassword('');
-      if (showToast) showToast('主守护密码已成功修改 (SHA-256 加密)', 'success');
+      if (showToast) showToast('重置成功', 'success');
     } catch (err) {
       setPassError(err.message || '密码修改失败');
     }
