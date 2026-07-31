@@ -97,8 +97,8 @@ export default function UserSecurityModal({ isOpen, onClose }) {
               <ShieldCheck className="w-5 h-5" />
             </div>
             <div>
-              <h2 className="text-lg font-bold text-white tracking-tight">用户与安全密码管理</h2>
-              <p className="text-xs text-slate-400">管理金库访问守护密码、账户角色与多成员权限</p>
+              <h2 className="text-base font-bold text-white tracking-tight">账号与密码</h2>
+              <p className="text-xs text-slate-400">管理个人资料、权限角色与密码</p>
             </div>
           </div>
           <button
@@ -115,55 +115,54 @@ export default function UserSecurityModal({ isOpen, onClose }) {
           <form onSubmit={onSubmitProfile} className="space-y-4">
             <h3 className="text-xs font-extrabold uppercase text-slate-400 tracking-wider flex items-center gap-2">
               <UserCheck className="w-4 h-4 text-cyan-400" />
-              当前账户个人资料与角色权限
+              个人资料与角色
             </h3>
 
             <div className="p-4 rounded-2xl bg-slate-900/60 border border-slate-800 space-y-4">
               {/* 用户名与邮箱绑定指示器 */}
-              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-3 rounded-xl bg-cyan-950/30 border border-cyan-500/30 text-xs gap-2">
-                <span className="text-slate-300 font-medium flex items-center gap-1.5">
-                  <UserCheck className="w-4 h-4 text-cyan-400" />
-                  账号与邮箱绑定状态：
-                </span>
-                <span className="px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 flex items-center gap-1 font-mono">
+              <div className="flex items-center justify-between p-3 rounded-xl bg-cyan-950/30 border border-cyan-500/30 text-xs">
+                <span className="text-slate-300 font-medium">账号状态</span>
+                <span className="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 flex items-center gap-1 font-mono">
                   <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
-                  {userName || 'Minx Zhang'} &lt;{userEmail || 'minxzhang18379@gmail.com'}&gt; 已双向关联绑定
+                  {userName || 'User'} &lt;{userEmail}&gt;
                 </span>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-300 mb-1.5">用户姓名 / 登录账号</label>
+                  <label className="block text-xs font-semibold text-slate-300 mb-1.5">用户名</label>
                   <input
                     type="text"
                     value={userName}
                     onChange={(e) => setUserName(e.target.value)}
                     required
+                    placeholder=""
                     className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-sm text-white focus:outline-none focus:border-cyan-500"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-slate-300 mb-1.5">关联绑定的邮箱账号</label>
+                  <label className="block text-xs font-semibold text-slate-300 mb-1.5">邮箱</label>
                   <input
                     type="email"
                     value={userEmail}
                     onChange={(e) => setUserEmail(e.target.value)}
                     required
+                    placeholder=""
                     className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-sm text-white focus:outline-none focus:border-cyan-500 font-mono"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1.5">家庭与资产安全角色</label>
+                <label className="block text-xs font-semibold text-slate-300 mb-1.5">角色权限</label>
                 <select
                   value={userRole}
                   onChange={(e) => setUserRole(e.target.value)}
                   className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-slate-200 focus:outline-none focus:border-cyan-500 font-semibold"
                 >
-                  <option value="master">👑 主超级管理员 (全权读写、修改与数据彻底清空权限)</option>
-                  <option value="family">🏡 家庭共享成员 (可新增与编辑，无彻底清空或全库导出权限)</option>
-                  <option value="guest">👁️ 只读访客模式 (仅支持查看资产与财务概览)</option>
+                  <option value="master">超级管理员</option>
+                  <option value="family">家庭成员</option>
+                  <option value="guest">只读访客</option>
                 </select>
               </div>
 
@@ -172,37 +171,32 @@ export default function UserSecurityModal({ isOpen, onClose }) {
                   type="submit"
                   className="bg-slate-800 hover:bg-slate-700 text-cyan-300 border border-cyan-500/30 px-4 py-2 rounded-xl text-xs font-bold transition-colors"
                 >
-                  保存个人资料与角色
+                  保存资料
                 </button>
               </div>
             </div>
           </form>
 
-          {/* 模块 2: 修改专属独立密码 (Per-User Independent Password) */}
+          {/* 模块 2: 修改密码 */}
           <form onSubmit={onSubmitPassword} className="space-y-4">
             <h3 className="text-xs font-extrabold uppercase text-slate-400 tracking-wider flex items-center justify-between">
               <span className="flex items-center gap-2">
                 <KeyRound className="w-4 h-4 text-amber-400" />
-                修改当前账户【{currentUser?.name || '管理员'}】专属独立密码
-              </span>
-              <span className="px-2 py-0.5 rounded text-[10px] bg-amber-500/10 text-amber-300 border border-amber-500/20">
-                一户一密 · 独享散列
+                修改密码
               </span>
             </h3>
 
             <div className="p-4 rounded-2xl bg-slate-900/60 border border-slate-800 space-y-4">
               {/* 旧密码 */}
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1.5">
-                  输入【{currentUser?.name}】当前原专属密码
-                </label>
+                <label className="block text-xs font-semibold text-slate-300 mb-1.5">旧密码</label>
                 <div className="relative">
                   <input
                     type={showPass ? 'text' : 'password'}
                     value={oldPassword}
                     onChange={(e) => setOldPassword(e.target.value)}
                     required
-                    placeholder="输入当前账户的原专属密码"
+                    placeholder=""
                     className="w-full bg-slate-950 border border-slate-800 rounded-xl pl-3.5 pr-10 py-2 text-sm text-white focus:outline-none focus:border-amber-500 font-mono"
                   />
                   <button
@@ -218,34 +212,34 @@ export default function UserSecurityModal({ isOpen, onClose }) {
               {/* 新密码与二次确认 */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-300 mb-1.5">设置新密码</label>
+                  <label className="block text-xs font-semibold text-slate-300 mb-1.5">新密码</label>
                   <input
                     type={showPass ? 'text' : 'password'}
                     value={newPassword}
                     onChange={(e) => setNewPassword(e.target.value)}
                     required
-                    placeholder="建议 6 位以上混合字符"
+                    placeholder=""
                     className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-sm text-white focus:outline-none focus:border-amber-500 font-mono"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-slate-300 mb-1.5">再次确认新密码</label>
+                  <label className="block text-xs font-semibold text-slate-300 mb-1.5">确认新密码</label>
                   <input
                     type={showPass ? 'text' : 'password'}
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     required
-                    placeholder="重复输入新密码"
+                    placeholder=""
                     className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-sm text-white focus:outline-none focus:border-amber-500 font-mono"
                   />
                 </div>
               </div>
 
-              {/* 密码强度可视化刻度条 */}
+              {/* 密码强度评估 */}
               {newPassword && (
                 <div className="space-y-1.5 pt-1">
                   <div className="flex items-center justify-between text-xs">
-                    <span className="text-slate-400">密码安全强度强度评估：</span>
+                    <span className="text-slate-400">密码强度：</span>
                     <span className={`font-extrabold ${strength.text}`}>{strength.label}</span>
                   </div>
                   <div className="h-1.5 w-full bg-slate-950 rounded-full overflow-hidden">
@@ -274,9 +268,9 @@ export default function UserSecurityModal({ isOpen, onClose }) {
               <div className="flex justify-end pt-1">
                 <button
                   type="submit"
-                  className="bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 text-white px-5 py-2.5 rounded-xl text-xs font-bold shadow-lg shadow-amber-600/20 transition-all active:scale-95"
+                  className="bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 text-white px-5 py-2 rounded-xl text-xs font-bold transition-all shadow-md shadow-amber-600/20"
                 >
-                  确定更新主守护密码
+                  更新密码
                 </button>
               </div>
             </div>
@@ -289,7 +283,7 @@ export default function UserSecurityModal({ isOpen, onClose }) {
             onClick={onClose}
             className="bg-slate-800 hover:bg-slate-700 text-white px-6 py-2 rounded-xl text-xs font-semibold transition-colors"
           >
-            完成并关闭
+            关闭
           </button>
         </div>
       </div>

@@ -49,8 +49,8 @@ function MainAppContent() {
             <Diamond className="w-8 h-8" />
           </div>
           <div>
-            <h1 className="text-2xl font-black text-white tracking-tight">Cloudflare Asset Vault</h1>
-            <p className="text-xs text-slate-400 mt-2">个人财产与全生命周期资产管理系统</p>
+            <h1 className="text-2xl font-black text-white tracking-tight">Asset Vault</h1>
+            <p className="text-xs text-slate-400 mt-1">资产管理系统</p>
           </div>
 
           <form onSubmit={handleLoginSubmit} className="space-y-4 text-left">
@@ -58,7 +58,7 @@ function MainAppContent() {
             <div>
               <label className="block text-xs font-semibold text-slate-300 mb-1.5 flex items-center gap-1.5">
                 <User className="w-3.5 h-3.5 text-cyan-400" />
-                登录账号 / 用户姓名
+                账号 / 邮箱
               </label>
               <input
                 type="text"
@@ -73,11 +73,11 @@ function MainAppContent() {
               />
             </div>
 
-            {/* 访问守护密码输入框 */}
+            {/* 访问密码输入框 */}
             <div>
               <label className="block text-xs font-semibold text-slate-300 mb-1.5 flex items-center gap-1.5">
                 <Lock className="w-3.5 h-3.5 text-amber-400" />
-                访问守护密码
+                密码
               </label>
               <input
                 type="password"
@@ -105,12 +105,9 @@ function MainAppContent() {
               type="submit"
               className="w-full bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 active:scale-[0.98] text-white font-bold py-3 rounded-xl shadow-lg shadow-cyan-600/20 text-sm transition-all"
             >
-              解锁进入资产金库
+              登录
             </button>
           </form>
-          <div className="text-xs text-slate-500 border-t border-slate-800/80 pt-4">
-            托管于 Cloudflare Pages & D1 Database
-          </div>
         </div>
       </div>
     );

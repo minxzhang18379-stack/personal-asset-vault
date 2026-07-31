@@ -71,20 +71,20 @@ export default function SettingsModal() {
 
         {/* 用户密码与审计日志控制 */}
         <div className="space-y-2">
-          <h4 className="text-xs font-bold uppercase text-slate-400 tracking-wider">安全与 180 天合规日志</h4>
+          <h4 className="text-xs font-bold uppercase text-slate-400 tracking-wider">安全与日志</h4>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
             <button
               onClick={() => {
                 setIsSettingsOpen(false);
                 setIsSecurityModalOpen(true);
               }}
-              className="flex items-center justify-between p-3 rounded-xl bg-gradient-to-r from-amber-500/10 to-orange-500/10 border border-amber-500/30 hover:border-amber-500/60 text-amber-300 text-xs font-bold transition-all shadow-md shadow-amber-500/5 active:scale-[0.99]"
+              className="flex items-center justify-between p-3 rounded-xl bg-slate-900 border border-amber-500/30 hover:border-amber-500/60 text-amber-300 text-xs font-bold transition-all active:scale-[0.99]"
             >
               <span className="flex items-center gap-2">
                 <ShieldCheck className="w-4 h-4 text-amber-400" />
-                修改守护密码
+                修改密码
               </span>
-              <span className="text-[10px] text-amber-400/80 underline">&rarr;</span>
+              <span className="text-[10px] text-amber-400/80">&rarr;</span>
             </button>
 
             <button
@@ -92,20 +92,20 @@ export default function SettingsModal() {
                 setIsSettingsOpen(false);
                 setIsAuditLogOpen(true);
               }}
-              className="flex items-center justify-between p-3 rounded-xl bg-gradient-to-r from-cyan-500/10 to-blue-500/10 border border-cyan-500/30 hover:border-cyan-500/60 text-cyan-300 text-xs font-bold transition-all shadow-md shadow-cyan-500/5 active:scale-[0.99]"
+              className="flex items-center justify-between p-3 rounded-xl bg-slate-900 border border-cyan-500/30 hover:border-cyan-500/60 text-cyan-300 text-xs font-bold transition-all active:scale-[0.99]"
             >
               <span className="flex items-center gap-2">
                 <Database className="w-4 h-4 text-cyan-400" />
-                180 天合规日志
+                审计日志
               </span>
-              <span className="text-[10px] text-cyan-400/80 underline">&rarr;</span>
+              <span className="text-[10px] text-cyan-400/80">&rarr;</span>
             </button>
           </div>
         </div>
 
         {/* 数据备份与恢复 */}
         <div className="space-y-3">
-          <h4 className="text-xs font-bold uppercase text-slate-400 tracking-wider">数据安全与离线备份</h4>
+          <h4 className="text-xs font-bold uppercase text-slate-400 tracking-wider">数据备份</h4>
           <div className="grid grid-cols-2 gap-3">
             <button
               onClick={exportBackup}

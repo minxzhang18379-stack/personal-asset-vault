@@ -72,13 +72,10 @@ export default function AuditLogModal({ isOpen, onClose }) {
               <FileText className="w-5 h-5" />
             </div>
             <div>
-              <h2 className="text-lg font-bold text-white tracking-tight flex items-center gap-2">
-                系统审计与 180 天合规日志看板
-                <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">
-                  180 天归档留存
-                </span>
+              <h2 className="text-base font-bold text-white tracking-tight flex items-center gap-2">
+                审计日志
               </h2>
-              <p className="text-xs text-slate-400">实时记录全站鉴权登录、密码重置、数据变更与敏感操作追溯</p>
+              <p className="text-xs text-slate-400">操作记录与安全追溯 (保存 180 天)</p>
             </div>
           </div>
           <button
@@ -90,17 +87,17 @@ export default function AuditLogModal({ isOpen, onClose }) {
         </div>
 
         {/* 180 天留存保护提示 Banner */}
-        <div className="px-6 py-3 bg-gradient-to-r from-cyan-950/40 via-blue-950/40 to-slate-950/40 border-b border-slate-800 flex items-center justify-between text-xs">
-          <div className="flex items-center gap-2 text-cyan-300">
+        <div className="px-6 py-3 bg-slate-900/60 border-b border-slate-800 flex items-center justify-between text-xs">
+          <div className="flex items-center gap-2 text-slate-400">
             <ShieldCheck className="w-4 h-4 text-cyan-400 shrink-0" />
-            <span>合规声明：全站操作行为日志根据安全要求自动保持 <strong>180 天</strong> 归档保护，超过 180 天的日志将自动销毁清理。</span>
+            <span>自动保持 180 天日志归档</span>
           </div>
           <button
             onClick={exportLogs}
             className="flex items-center gap-1.5 bg-slate-800 hover:bg-slate-700 text-white px-3 py-1.5 rounded-xl text-xs font-semibold border border-slate-700 transition-colors shrink-0"
           >
             <Download className="w-3.5 h-3.5 text-cyan-400" />
-            导出 180 天日志 JSON
+            导出日志
           </button>
         </div>
 
@@ -176,7 +173,7 @@ export default function AuditLogModal({ isOpen, onClose }) {
             onClick={onClose}
             className="bg-cyan-600 hover:bg-cyan-500 text-white px-6 py-2 rounded-xl text-xs font-semibold transition-colors"
           >
-            完成关闭
+            关闭
           </button>
         </div>
       </div>
