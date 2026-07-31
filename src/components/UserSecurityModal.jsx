@@ -195,7 +195,7 @@ export default function UserSecurityModal({ isOpen, onClose }) {
                     value={oldPassword}
                     onChange={(e) => setOldPassword(e.target.value)}
                     required
-                    placeholder="默认原密码为 admin"
+                    placeholder="输入当前原守护密码"
                     className="w-full bg-slate-950 border border-slate-800 rounded-xl pl-3.5 pr-10 py-2 text-sm text-white focus:outline-none focus:border-amber-500 font-mono"
                   />
                   <button

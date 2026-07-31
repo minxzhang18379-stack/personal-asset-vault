@@ -32,12 +32,6 @@ export async function hashPassword(plaintextPassword) {
  */
 export async function verifyPasswordHash(inputPassword, storedHash) {
   if (!inputPassword || !storedHash) return false;
-  
-  // 特殊兼容：如果存储的是旧版明文密码 'admin'，则自动对比升级
-  if (storedHash === 'admin' && inputPassword === 'admin') {
-    return true;
-  }
-
   const computedHash = await hashPassword(inputPassword);
   return computedHash === storedHash;
 }

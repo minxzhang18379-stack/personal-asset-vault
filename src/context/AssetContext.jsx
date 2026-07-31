@@ -83,7 +83,7 @@ export function AssetProvider({ children }) {
 
   const handleChangePassword = async (oldPass, newPass) => {
     const isOldValid = await verifyPasswordHash(oldPass, masterPasswordHash);
-    if (!isOldValid && oldPass !== 'admin') {
+    if (!isOldValid) {
       logAction('PASSWORD_CHANGE', '修改主守护密码尝试失败：原旧密码校验错误', 'FAILED');
       throw new Error('原旧密码校验错误，请输入正确的当前密码');
     }
@@ -244,7 +244,7 @@ export function AssetProvider({ children }) {
     // 校验密码
     const passToCheck = password !== undefined ? password : usernameOrEmail;
     const isValid = await verifyPasswordHash(passToCheck, masterPasswordHash);
-    if (isValid || passToCheck === 'admin') {
+    if (isValid) {
       setIsAuthenticated(true);
       localStorage.setItem('ASSET_VAULT_AUTH', 'true');
       const boundUserStr = `${currentUser?.name || usernameOrEmail} <${currentUser?.email || '已绑定邮箱'}>`;
