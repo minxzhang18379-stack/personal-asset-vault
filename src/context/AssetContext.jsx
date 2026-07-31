@@ -336,14 +336,15 @@ export function AssetProvider({ children }) {
     });
 
     return {
+      totalValuation: totalPurchaseValue,
       totalPurchaseValue,
       totalCurrentValue,
       totalDepreciation,
       expiringWarranties,
       lowStockConsumables,
       expiringConsumables,
-      assetCount: assets.length,
-      consumableCount: consumables.length
+      assetCount: assets ? assets.length : 0,
+      consumableCount: consumables ? consumables.length : 0
     };
   }, [assets, consumables]);
 

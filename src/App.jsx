@@ -42,8 +42,8 @@ function MainAppContent() {
 
   const NAV_ITEMS = [
     { key: 'dashboard', label: '财务大盘', icon: LayoutDashboard },
-    { key: 'assets', label: '资产档案', icon: Box, badge: stats.assetCount },
-    { key: 'consumables', label: '快消耗材', icon: Package, badge: stats.consumableCount },
+    { key: 'assets', label: '资产档案', icon: Box, badge: stats?.assetCount || 0 },
+    { key: 'consumables', label: '快消耗材', icon: Package, badge: stats?.consumableCount || 0 },
     { key: 'locations', label: '空间收纳', icon: MapPin },
     { key: 'analytics', label: '财务分析', icon: BarChart3 },
   ];
@@ -172,7 +172,7 @@ function MainAppContent() {
                   <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-bold">已同步</span>
                 </div>
                 <div className="text-xl font-black text-white tracking-tight font-mono">
-                  ¥ {stats.totalValuation.toLocaleString('zh-CN', { minimumFractionDigits: 2 })}
+                  ¥ {(stats?.totalValuation || 0).toLocaleString('zh-CN', { minimumFractionDigits: 2 })}
                 </div>
               </div>
 
