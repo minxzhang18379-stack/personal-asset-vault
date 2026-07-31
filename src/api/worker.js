@@ -20,7 +20,7 @@ app.get('/api/health', (c) => {
 });
 
 /**
- * GET /api/dashboard - 获取仪表盘全量数据 (D1 db.batch 批处理 + 关联 SQL 子查询)
+ * GET /api/dashboard - 获取全量数据 (包含 资产、耗材、位置、账号、开销)
  */
 app.get('/api/dashboard', async (c) => {
   const db = c.env.DB;
@@ -29,8 +29,7 @@ app.get('/api/dashboard', async (c) => {
   }
 
   try {
-    // 采用 D1 原生 batch 批处理将 SQL 合并为单次网络请求发送
-    const [assetsRes, consumablesRes, locationsRes] = await db.batch([
+    const [assetsRes, consumablesRes, locationsRes, usersRes, expensesRes] = await db.batch([
       db.prepare(`
         SELECT 
           a.*,
@@ -42,11 +41,12 @@ app.get('/api/dashboard', async (c) => {
         FROM assets a
         ORDER BY a.created_at DESC
       `),
-      db.prepare('SELECT * FROM consumables ORDER BY created_at DESC'),
-      db.prepare('SELECT * FROM locations ORDER BY created_at DESC')
+      db.prepare("SELECT * FROM assets WHERE item_type = 'consumable' ORDER BY created_at DESC"),
+      db.prepare('SELECT * FROM locations ORDER BY created_at DESC'),
+      db.prepare('SELECT * FROM users ORDER BY created_at DESC'),
+      db.prepare('SELECT * FROM expenses ORDER BY created_at DESC')
     ]);
 
-    // 原生解析图片附件 JSON 数组
     const assets = (assetsRes.results || []).map((asset) => {
       let attachments = [];
       try {
@@ -62,8 +62,27 @@ app.get('/api/dashboard', async (c) => {
 
     const consumables = consumablesRes.results || [];
     const locations = locationsRes.results || [];
+    const users = (usersRes.results || []).map(u => ({
+      id: u.id,
+      name: u.name,
+      username: u.username,
+      email: u.email,
+      role: u.role,
+      roleName: u.role_name,
+      passwordHash: u.password_hash,
+      isDefaultPassword: Boolean(u.is_default_password)
+    }));
+    const expenses = (expensesRes.results || []).map(e => ({
+      id: e.id,
+      title: e.title,
+      amount: e.amount,
+      category: e.category,
+      date: e.date,
+      recurring: Boolean(e.recurring),
+      notes: e.notes
+    }));
 
-    return c.json({ assets, consumables, locations });
+    return c.json({ assets, consumables, locations, users, expenses });
   } catch (err) {
     return c.json({ error: err.message }, 500);
   }
@@ -81,6 +100,12 @@ app.post('/api/assets', async (c) => {
     await db.prepare(`
       INSERT INTO assets (id, name, category, status, purchase_price, current_value, depreciation_rate, purchase_date, warranty_expire_date, location_id, brand, model_number, serial_number, notes)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      ON CONFLICT(id) DO UPDATE SET
+        name=excluded.name, category=excluded.category, status=excluded.status,
+        purchase_price=excluded.purchase_price, current_value=excluded.current_value,
+        depreciation_rate=excluded.depreciation_rate, purchase_date=excluded.purchase_date,
+        warranty_expire_date=excluded.warranty_expire_date, location_id=excluded.location_id,
+        brand=excluded.brand, model_number=excluded.model_number, serial_number=excluded.serial_number, notes=excluded.notes
     `).bind(
       id, body.name, body.category || '其它', body.status || 'in_use',
       body.purchase_price || 0, body.current_value || body.purchase_price || 0,
@@ -109,26 +134,60 @@ app.delete('/api/assets/:id', async (c) => {
 });
 
 /**
- * POST /api/upload - Cloudflare R2 对象存储直传
+ * POST /api/users/update-password - 全端同步更新密码哈希
  */
-app.post('/api/upload', async (c) => {
-  const bucket = c.env.BUCKET;
-  if (!bucket) {
-    return c.json({ error: 'Cloudflare R2 Bucket 未绑定' }, 500);
-  }
+app.post('/api/users/update-password', async (c) => {
+  const db = c.env.DB;
+  const body = await c.req.json();
+  const { userId, passwordHash, isDefaultPassword } = body;
 
   try {
-    const formData = await c.req.parseBody();
-    const file = formData['file'];
-    if (!file) return c.json({ error: '未接收到文件' }, 400);
+    await db.prepare(`
+      UPDATE users SET password_hash = ?, is_default_password = ? WHERE id = ?
+    `).bind(passwordHash, isDefaultPassword ? 1 : 0, userId).run();
 
-    const key = `uploads/${Date.now()}-${file.name}`;
-    await bucket.put(key, file.stream(), {
-      httpMetadata: { contentType: file.type }
-    });
+    return c.json({ success: true });
+  } catch (err) {
+    return c.json({ error: err.message }, 500);
+  }
+});
 
-    const publicUrl = `https://media.yourdomain.com/${key}`;
-    return c.json({ url: publicUrl, key });
+/**
+ * POST /api/expenses - 新增或修改账单
+ */
+app.post('/api/expenses', async (c) => {
+  const db = c.env.DB;
+  const body = await c.req.json();
+  const id = body.id || 'exp-' + Date.now();
+
+  try {
+    await db.prepare(`
+      INSERT INTO expenses (id, title, amount, category, date, recurring, notes)
+      VALUES (?, ?, ?, ?, ?, ?, ?)
+      ON CONFLICT(id) DO UPDATE SET
+        title=excluded.title, amount=excluded.amount, category=excluded.category,
+        date=excluded.date, recurring=excluded.recurring, notes=excluded.notes
+    `).bind(
+      id, body.title, body.amount || 0, body.category || '日常消费',
+      body.date || new Date().toISOString().split('T')[0],
+      body.recurring ? 1 : 0, body.notes || ''
+    ).run();
+
+    return c.json({ success: true, id });
+  } catch (err) {
+    return c.json({ error: err.message }, 500);
+  }
+});
+
+/**
+ * DELETE /api/expenses/:id - 删除账单
+ */
+app.delete('/api/expenses/:id', async (c) => {
+  const db = c.env.DB;
+  const id = c.req.param('id');
+  try {
+    await db.prepare('DELETE FROM expenses WHERE id = ?').bind(id).run();
+    return c.json({ success: true });
   } catch (err) {
     return c.json({ error: err.message }, 500);
   }

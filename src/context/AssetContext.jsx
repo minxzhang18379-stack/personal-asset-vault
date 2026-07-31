@@ -234,6 +234,9 @@ export function AssetProvider({ children }) {
     );
     saveAccountsList(updatedAccounts.length ? updatedAccounts : [updatedProfile]);
 
+    // 100% 实时同步更新到 Cloudflare D1 边缘云数据库
+    await ApiService.updateUserPassword(currentUser.id, newHash, false);
+
     logAction('PASSWORD_CHANGE', `成功为账户【${currentUser?.name} <${currentUser?.email}>】设置专属新密码 (初始默认密码通道已彻底作废)`, 'SUCCESS');
     return true;
   };
@@ -278,11 +281,7 @@ export function AssetProvider({ children }) {
       { id: 'exp-1', title: 'iCloud 200GB 扩容订阅', amount: 21, category: '订阅服务', date: '2026-07-01', recurring: true, notes: '每月自动扣款' },
       { id: 'exp-2', title: '山姆会员店快销品采购', amount: 680, category: '耗材补给', date: '2026-07-05', recurring: false, notes: '咖啡胶囊与洗护用品' },
       { id: 'exp-3', title: '主卧智能音响与智控软装', amount: 1290, category: '固定资产', date: '2026-07-12', recurring: false, notes: '硬件数码升级' },
-      { id: 'exp-4', title: '网络宽带与云服务器续费', amount: 128, category: '房屋水电', date: '2026-07-15', recurring: true, notes: '千兆光纤月租' },
-      { id: 'exp-5', title: '家庭周末聚餐饮食消费', amount: 560, category: '日常消费', date: '2026-07-20', recurring: false, notes: '餐饮支出' },
-      { id: 'exp-6', title: 'Apple Music 家庭共享包月', amount: 15, category: '订阅服务', date: '2026-07-25', recurring: true, notes: '音乐订阅' },
-      { id: 'exp-7', title: '上月电费网费结算', amount: 240, category: '房屋水电', date: '2026-06-28', recurring: true, notes: '夏季空调开销' },
-      { id: 'exp-8', title: '日用护肤品补货', amount: 1680, category: '耗材补给', date: '2026-06-15', recurring: false, notes: '神仙水与补水面膜' }
+      { id: 'exp-4', title: '网络宽带与云服务器续费', amount: 128, category: '房屋水电', date: '2026-07-15', recurring: true, notes: '千兆光纤月租' }
     ];
   });
 
@@ -291,7 +290,8 @@ export function AssetProvider({ children }) {
     localStorage.setItem('ASSET_VAULT_EXPENSES_V1', JSON.stringify(newList));
   };
 
-  const handleSaveExpense = (item) => {
+  const handleSaveExpense = async (item) => {
+    let targetItem = item;
     if (item.id) {
       const updated = expenses.map(e => e.id === item.id ? { ...e, ...item } : e);
       saveExpensesList(updated);
@@ -306,15 +306,19 @@ export function AssetProvider({ children }) {
         recurring: !!item.recurring,
         notes: item.notes || ''
       };
+      targetItem = newItem;
       saveExpensesList([newItem, ...expenses]);
       logAction('EXPENSE_ADD', `新增账单开销【${newItem.title}】金额: ¥${newItem.amount}`, 'SUCCESS');
     }
+
+    await ApiService.saveExpense(targetItem);
   };
 
-  const handleDeleteExpense = (id) => {
+  const handleDeleteExpense = async (id) => {
     const target = expenses.find(e => e.id === id);
     const filtered = expenses.filter(e => e.id !== id);
     saveExpensesList(filtered);
+    await ApiService.deleteExpense(id);
     if (target) {
       logAction('EXPENSE_DELETE', `删除开销账单【${target.title}】金额: ¥${target.amount}`, 'WARNING');
     }
@@ -325,7 +329,7 @@ export function AssetProvider({ children }) {
     return localStorage.getItem('ASSET_VAULT_AUTH') === 'true';
   });
 
-  // 刷新全量数据
+  // 刷新全量数据 (Cloudflare D1 多端同步引擎)
   const refreshData = async () => {
     setLoading(true);
     try {
@@ -334,6 +338,23 @@ export function AssetProvider({ children }) {
       setConsumables(data.consumables || []);
       setAllItems(data.allItems || [...(data.assets || []), ...(data.consumables || [])]);
       setLocations(data.locations || []);
+
+      // D1 账号数据全端实时同步
+      if (data.users && data.users.length) {
+        setUserAccounts(data.users);
+        localStorage.setItem('ASSET_VAULT_USER_ACCOUNTS_V3', JSON.stringify(data.users));
+        const activeUser = data.users.find(u => u.id === currentUser?.id || u.username === currentUser?.username);
+        if (activeUser) {
+          setCurrentUser(activeUser);
+          localStorage.setItem('ASSET_VAULT_CURRENT_USER', JSON.stringify(activeUser));
+        }
+      }
+
+      // D1 账单开销全端实时同步
+      if (data.expenses && data.expenses.length) {
+        setExpenses(data.expenses);
+        localStorage.setItem('ASSET_VAULT_EXPENSES_V1', JSON.stringify(data.expenses));
+      }
     } catch (e) {
       console.error('加载资产数据失败:', e);
     } finally {

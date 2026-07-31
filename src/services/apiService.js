@@ -44,16 +44,32 @@ export const ApiService = {
    * @param {Object} asset - 待保存的资产数据实体
    * @returns {Promise<Object>} 保存后的资产实体
    */
+  /**
+   * 统一保存/更新资产记录
+   * @param {Object} asset - 待保存的资产数据实体
+   * @returns {Promise<Object>} 保存后的资产实体
+   */
   async saveAsset(asset) {
-    const data = LocalMockService.loadData();
-    const existingIndex = data.assets.findIndex(a => a.id === asset.id);
-
     asset.item_type = asset.item_type || 'durable';
     if (asset.item_type === 'durable') {
       asset.current_value = LocalMockService.calculateLiveValue(asset);
     }
     asset.updated_at = new Date().toISOString();
 
+    if (USE_CLOUDFLARE_WORKER) {
+      try {
+        await fetch(`${WORKER_BASE_URL}/assets`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(asset)
+        });
+      } catch (e) {
+        console.warn('云端保存资产失败，降级本地:', e);
+      }
+    }
+
+    const data = LocalMockService.loadData();
+    const existingIndex = data.assets.findIndex(a => a.id === asset.id);
     if (existingIndex >= 0) {
       data.assets[existingIndex] = { ...data.assets[existingIndex], ...asset };
     } else {
@@ -72,6 +88,13 @@ export const ApiService = {
    * @returns {Promise<boolean>}
    */
   async deleteAsset(id) {
+    if (USE_CLOUDFLARE_WORKER) {
+      try {
+        await fetch(`${WORKER_BASE_URL}/assets/${id}`, { method: 'DELETE' });
+      } catch (e) {
+        console.warn('云端删除资产失败:', e);
+      }
+    }
     const data = LocalMockService.loadData();
     data.assets = data.assets.filter(a => a.id !== id);
     LocalMockService.saveData(data);
@@ -79,8 +102,56 @@ export const ApiService = {
   },
 
   /**
+   * 云端同步更新账号密码
+   */
+  async updateUserPassword(userId, passwordHash, isDefaultPassword) {
+    if (USE_CLOUDFLARE_WORKER) {
+      try {
+        await fetch(`${WORKER_BASE_URL}/users/update-password`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ userId, passwordHash, isDefaultPassword })
+        });
+      } catch (e) {
+        console.warn('云端同步更新密码失败:', e);
+      }
+    }
+  },
+
+  /**
+   * 保存/修改开销账单
+   */
+  async saveExpense(expense) {
+    if (USE_CLOUDFLARE_WORKER) {
+      try {
+        await fetch(`${WORKER_BASE_URL}/expenses`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(expense)
+        });
+      } catch (e) {
+        console.warn('云端保存开销账单失败:', e);
+      }
+    }
+    return expense;
+  },
+
+  /**
+   * 删除开销账单
+   */
+  async deleteExpense(id) {
+    if (USE_CLOUDFLARE_WORKER) {
+      try {
+        await fetch(`${WORKER_BASE_URL}/expenses/${id}`, { method: 'DELETE' });
+      } catch (e) {
+        console.warn('云端删除开销账单失败:', e);
+      }
+    }
+    return true;
+  },
+
+  /**
    * 保存快消耗材记录
-   * @param {Object} item - 耗材实体
    */
   async saveConsumable(item) {
     item.item_type = 'consumable';
@@ -89,22 +160,19 @@ export const ApiService = {
 
   /**
    * 增减快消耗材的剩余数量
-   * @param {string} id - 耗材 ID
-   * @param {number} delta - 数量增减量 (如 +1 或 -1)
    */
   async updateConsumableQuantity(id, delta) {
     const data = LocalMockService.loadData();
     const item = data.assets.find(c => c.id === id);
     if (item) {
       item.quantity = Math.max(0, (item.quantity || 0) + delta);
-      LocalMockService.saveData(data);
+      await this.saveConsumable(item);
     }
     return item;
   },
 
   /**
    * 删除耗材记录
-   * @param {string} id - 耗材 ID
    */
   async deleteConsumable(id) {
     return this.deleteAsset(id);
@@ -112,7 +180,6 @@ export const ApiService = {
 
   /**
    * 保存/新增收纳位置
-   * @param {Object} loc - 位置数据
    */
   async saveLocation(loc) {
     const data = LocalMockService.loadData();
@@ -136,7 +203,7 @@ export const ApiService = {
   },
 
   /**
-   * 一键彻底清空全量数据 (清空资产、耗材与存放位置)
+   * 一键彻底清空全量数据
    */
   async clearAllData() {
     const emptyData = {
