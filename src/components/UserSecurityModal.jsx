@@ -83,7 +83,7 @@ export default function UserSecurityModal({ isOpen, onClose }) {
 
   const handleSafeClose = () => {
     if (currentUser?.isDefaultPassword) {
-      if (showToast) showToast('您当前正在使用初始默认密码，请先设置专属新密码', 'warning');
+      if (showToast) showToast('请先修改初始密码', 'warning');
       return;
     }
     onClose();
@@ -121,11 +121,11 @@ export default function UserSecurityModal({ isOpen, onClose }) {
 
         {/* 内容主体 */}
         <div className="p-6 overflow-y-auto space-y-6">
-          {/* 强制修改初始密码强提示横幅 */}
+          {/* 初始密码提示横幅 */}
           {currentUser?.isDefaultPassword && (
-            <div className="p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-300 text-xs flex items-center gap-2.5 font-bold animate-pulse">
-              <AlertCircle className="w-5 h-5 shrink-0 text-amber-400" />
-              安全提醒：您正在使用系统初始默认密码，请立即修改设置您的专属新密码！完成设置后初始默认密码将彻底失效作废。
+            <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-300 text-xs flex items-center gap-2.5 font-medium">
+              <AlertCircle className="w-4 h-4 shrink-0 text-amber-400" />
+              当前账号处于初始密码状态，请修改并设置新密码。
             </div>
           )}
           {/* 模块 1: 当前登录成员身份与角色设定 */}
