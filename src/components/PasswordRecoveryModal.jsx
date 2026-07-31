@@ -64,8 +64,8 @@ export default function PasswordRecoveryModal({ isOpen, onClose }) {
               <ShieldAlert className="w-5 h-5" />
             </div>
             <div>
-              <h2 className="text-base font-bold text-white tracking-tight">应急强制重置密码</h2>
-              <p className="text-xs text-slate-400">使用安全恢复密钥重置密码</p>
+              <h2 className="text-base font-bold text-white tracking-tight">重置密码</h2>
+              <p className="text-xs text-slate-400">使用安全恢复密钥</p>
             </div>
           </div>
           <button
@@ -80,13 +80,13 @@ export default function PasswordRecoveryModal({ isOpen, onClose }) {
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
           {/* 目标账号/邮箱 */}
           <div>
-            <label className="block text-xs font-semibold text-slate-300 mb-1.5">目标账号 / 绑定邮箱</label>
+            <label className="block text-xs font-semibold text-slate-300 mb-1.5">账号 / 邮箱</label>
             <input
               type="text"
               required
               value={accountInput}
               onChange={(e) => { setAccountInput(e.target.value); setErrorMsg(''); }}
-              placeholder="需要重置密码的账号或邮箱"
+              placeholder=""
               className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-rose-500 font-medium"
             />
           </div>
@@ -95,14 +95,14 @@ export default function PasswordRecoveryModal({ isOpen, onClose }) {
           <div>
             <div className="flex items-center justify-between mb-1.5">
               <label className="block text-xs font-semibold text-slate-300">安全恢复密钥</label>
-              <span className="text-[10px] text-slate-500 font-mono">默认密钥: RECOVERY-2026-KEY</span>
+              <span className="text-[10px] text-slate-500 font-mono">密钥: RECOVERY-2026-KEY</span>
             </div>
             <input
               type="text"
               required
               value={recoveryKey}
               onChange={(e) => { setRecoveryKey(e.target.value); setErrorMsg(''); }}
-              placeholder="输入安全恢复密钥 (RECOVERY-2026-KEY)"
+              placeholder=""
               className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-rose-500 font-mono"
             />
           </div>

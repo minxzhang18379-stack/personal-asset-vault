@@ -114,13 +114,18 @@ function MainAppContent() {
               <button
                 type="button"
                 onClick={() => setIsRecoveryOpen(true)}
-                className="text-xs text-rose-400/80 hover:text-rose-300 underline font-medium transition-colors"
+                className="text-xs text-slate-400 hover:text-cyan-300 underline font-medium transition-colors"
               >
-                忘记密码？应急强制重置
+                忘记密码？
               </button>
             </div>
           </form>
         </div>
+
+        <PasswordRecoveryModal 
+          isOpen={isRecoveryOpen} 
+          onClose={() => setIsRecoveryOpen(false)} 
+        />
       </div>
     );
   }
