@@ -69,7 +69,7 @@ function MainAppContent() {
                   if (authError) setAuthError('');
                 }}
                 placeholder="用户名，如 Minx Zhang / admin"
-                className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-cyan-500 transition-colors font-medium"
+                className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-base sm:text-sm text-white focus:outline-none focus:border-cyan-500 transition-colors font-medium"
               />
             </div>
 
@@ -88,7 +88,7 @@ function MainAppContent() {
                   if (authError) setAuthError('');
                 }}
                 placeholder="默认密码：admin"
-                className={`w-full bg-slate-900 border rounded-xl px-4 py-3 text-sm text-white focus:outline-none transition-colors ${
+                className={`w-full bg-slate-900 border rounded-xl px-4 py-3 text-base sm:text-sm text-white focus:outline-none transition-colors ${
                   authError ? 'border-rose-500/80 focus:border-rose-500' : 'border-slate-800 focus:border-cyan-500'
                 }`}
               />
@@ -132,9 +132,14 @@ function MainAppContent() {
           <Diamond className="w-5 h-5 text-cyan-400" />
           <span>Asset Vault</span>
         </div>
-        <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className="p-2 text-slate-300">
-          {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-        </button>
+        <div className="flex items-center gap-3">
+          <span className="text-xs text-cyan-300 font-semibold bg-cyan-500/10 px-2.5 py-1 rounded-full border border-cyan-500/20">
+            {currentUser?.name || '管理员'}
+          </span>
+          <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className="p-1 text-slate-300 hover:text-white">
+            {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+          </button>
+        </div>
       </div>
 
       {/* 左侧侧边导航栏 Sidebar */}
@@ -190,6 +195,26 @@ function MainAppContent() {
 
         {/* 底部设置与退出栏 */}
         <div className="pt-4 border-t border-slate-800/80 space-y-2">
+          {/* 活动成员身份卡片 */}
+          <div className="p-3 rounded-2xl bg-slate-900/90 border border-slate-800/80 flex items-center justify-between">
+            <div className="flex items-center gap-2.5 min-w-0">
+              <div className="w-7 h-7 rounded-full bg-cyan-500/20 text-cyan-300 font-extrabold flex items-center justify-center text-xs shrink-0 border border-cyan-500/40">
+                {currentUser?.name ? currentUser.name.charAt(0).toUpperCase() : 'U'}
+              </div>
+              <div className="min-w-0">
+                <div className="text-xs font-bold text-white truncate">{currentUser?.name || 'Minx Zhang'}</div>
+                <div className="text-[10px] text-cyan-400/80 font-mono truncate">{currentUser?.roleName || '主超级管理员'}</div>
+              </div>
+            </div>
+            <button 
+              onClick={() => setIsSecurityModalOpen(true)}
+              className="p-1 text-slate-400 hover:text-cyan-300 transition-colors"
+              title="管理账号与安全"
+            >
+              <ShieldCheck className="w-4 h-4" />
+            </button>
+          </div>
+
           <button
             onClick={() => setIsSettingsOpen(true)}
             className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs text-slate-400 hover:text-white hover:bg-slate-900 transition-colors"
