@@ -197,19 +197,20 @@ export function AssetProvider({ children }) {
       throw new Error('新密码长度不能少于 4 位');
     }
 
+    if (cleanNew === '123456' || cleanNew === 'admin') {
+      throw new Error('新密码不能继续使用默认初始密码 123456 或 admin');
+    }
+
     const userPassHash = currentUser?.passwordHash || DEFAULT_ADMIN_HASH;
+    const isCurrentlyDefault = currentUser?.isDefaultPassword || userPassHash === DEFAULT_ADMIN_HASH || userPassHash === '8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918';
+
     let isOldValid = await verifyPasswordHash(cleanOld, userPassHash);
     if (!isOldValid && oldPass !== cleanOld) {
       isOldValid = await verifyPasswordHash(oldPass, userPassHash);
     }
 
-    // 容错 1：允许通用默认密码 'admin' 或 '123456' 作为有效旧密码校验
-    if (!isOldValid && (cleanOld === 'admin' || cleanOld === '123456')) {
-      isOldValid = true;
-    }
-
-    // 容错 2：如果当前账号哈希为默认初始哈希，无条件信任旧密码
-    if (!isOldValid && (userPassHash === DEFAULT_ADMIN_HASH || userPassHash === '8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918')) {
+    // 仅当当前仍处于【默认密码状态】时，才允许 123456 或 admin 校验通过
+    if (!isOldValid && isCurrentlyDefault && (cleanOld === 'admin' || cleanOld === '123456')) {
       isOldValid = true;
     }
 
@@ -218,8 +219,14 @@ export function AssetProvider({ children }) {
       throw new Error('原旧密码校验错误，请输入当前账户正确的专属密码');
     }
 
+    // 生成专属新密码哈希，并将 isDefaultPassword 永久关闭！
     const newHash = await hashPassword(cleanNew);
-    const updatedProfile = { ...currentUser, passwordHash: newHash };
+    const updatedProfile = { 
+      ...currentUser, 
+      passwordHash: newHash,
+      isDefaultPassword: false 
+    };
+
     setCurrentUser(updatedProfile);
     localStorage.setItem('ASSET_VAULT_CURRENT_USER', JSON.stringify(updatedProfile));
 
@@ -229,7 +236,7 @@ export function AssetProvider({ children }) {
     );
     saveAccountsList(updatedAccounts.length ? updatedAccounts : [updatedProfile]);
 
-    logAction('PASSWORD_CHANGE', `成功为账户【${currentUser?.name} <${currentUser?.email}>】更新专属安全密码`, 'SUCCESS');
+    logAction('PASSWORD_CHANGE', `成功为账户【${currentUser?.name} <${currentUser?.email}>】设置专属新密码 (初始默认密码通道已彻底作废)`, 'SUCCESS');
     return true;
   };
 
@@ -473,21 +480,32 @@ export function AssetProvider({ children }) {
       isValid = await verifyPasswordHash(password, userPassHash);
     }
 
-    // 初始内置密码 'admin' 或 '123456' 兜底：保障随时 100% 解锁成功
-    if (!isValid && (cleanPassword === 'admin' || cleanPassword === '123456')) {
+    // 判断该账号目前是否仍处于【初始默认密码阶段】
+    const isCurrentlyDefault = targetUser.isDefaultPassword !== false && (
+      userPassHash === DEFAULT_ADMIN_HASH || 
+      userPassHash === '8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918'
+    );
+
+    // 仅当账号处于【初始默认密码阶段】时，才允许使用 123456 或 admin 登录
+    if (!isValid && isCurrentlyDefault && (cleanPassword === 'admin' || cleanPassword === '123456')) {
       isValid = true;
-      const targetHash = await hashPassword('123456');
-      targetUser = { ...targetUser, passwordHash: targetHash };
-      const updatedList = latestAccounts.map(a => a.id === targetUser.id ? targetUser : a);
-      saveAccountsList(updatedList.length ? updatedList : [targetUser]);
     }
 
     if (isValid) {
-      setCurrentUser(targetUser);
-      localStorage.setItem('ASSET_VAULT_CURRENT_USER', JSON.stringify(targetUser));
+      const isDefaultNow = isCurrentlyDefault && (cleanPassword === '123456' || cleanPassword === 'admin' || userPassHash === '8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918');
+      const finalUser = { ...targetUser, isDefaultPassword: isDefaultNow };
+
+      setCurrentUser(finalUser);
+      localStorage.setItem('ASSET_VAULT_CURRENT_USER', JSON.stringify(finalUser));
       setIsAuthenticated(true);
       localStorage.setItem('ASSET_VAULT_AUTH', 'true');
-      logAction('AUTH_LOGIN', `账户【${targetUser.name} <${targetUser.email}>】校验密码成功，解锁进入金库`, 'SUCCESS');
+
+      // 首次使用默认密码登录成功后，自动触发强制修改密码弹窗
+      if (isDefaultNow) {
+        setIsSecurityModalOpen(true);
+      }
+
+      logAction('AUTH_LOGIN', `账户【${finalUser.name} <${finalUser.email}>】登录成功${isDefaultNow ? ' (自动调起强制修改初始密码)' : ''}`, 'SUCCESS');
       return true;
     }
 

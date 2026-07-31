@@ -81,10 +81,18 @@ export default function UserSecurityModal({ isOpen, onClose }) {
     onClose();
   };
 
+  const handleSafeClose = () => {
+    if (currentUser?.isDefaultPassword) {
+      if (showToast) showToast('您当前正在使用初始默认密码，请先设置专属新密码', 'warning');
+      return;
+    }
+    onClose();
+  };
+
   return (
     <div 
-      onClick={onClose}
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md animate-fadeIn"
+      onClick={handleSafeClose}
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md animate-fadeIn select-none"
     >
       <div 
         onClick={(e) => e.stopPropagation()}
@@ -101,16 +109,25 @@ export default function UserSecurityModal({ isOpen, onClose }) {
               <p className="text-xs text-slate-400">管理个人资料、权限角色与密码</p>
             </div>
           </div>
-          <button
-            onClick={onClose}
-            className="p-1.5 rounded-full text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
-          >
-            <X className="w-5 h-5" />
-          </button>
+          {!currentUser?.isDefaultPassword && (
+            <button
+              onClick={handleSafeClose}
+              className="p-1.5 rounded-full text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          )}
         </div>
 
         {/* 内容主体 */}
         <div className="p-6 overflow-y-auto space-y-6">
+          {/* 强制修改初始密码强提示横幅 */}
+          {currentUser?.isDefaultPassword && (
+            <div className="p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-300 text-xs flex items-center gap-2.5 font-bold animate-pulse">
+              <AlertCircle className="w-5 h-5 shrink-0 text-amber-400" />
+              安全提醒：您正在使用系统初始默认密码，请立即修改设置您的专属新密码！完成设置后初始默认密码将彻底失效作废。
+            </div>
+          )}
           {/* 模块 1: 当前登录成员身份与角色设定 */}
           <form onSubmit={onSubmitProfile} className="space-y-4">
             <h3 className="text-xs font-extrabold uppercase text-slate-400 tracking-wider flex items-center gap-2">
