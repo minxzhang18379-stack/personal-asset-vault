@@ -1,10 +1,10 @@
 import React from 'react';
 import { useAssets } from '../context/AssetContext';
-import { BarChart3, TrendingDown, DollarSign, Award, ArrowDownRight, PieChart as PieIcon, ShieldCheck } from 'lucide-react';
+import { BarChart3, TrendingDown, DollarSign, Award, ArrowDownRight, PieChart as PieIcon, ShieldCheck, Settings } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 
 export default function AnalyticsView() {
-  const { assets, stats } = useAssets();
+  const { assets, stats, setIsSettingsOpen } = useAssets();
 
   // 按分类计算原价 vs 当前估值
   const categoryComparison = React.useMemo(() => {
@@ -33,20 +33,29 @@ export default function AnalyticsView() {
   return (
     <div className="space-y-8">
       {/* 头部 */}
-      <div>
-        <h1 className="text-2xl font-bold text-white tracking-tight flex items-center gap-2">
-          <BarChart3 className="w-6 h-6 text-cyan-400" />
-          资产财务与折旧深入报告
-        </h1>
-        <p className="text-xs text-slate-400 mt-1">
-          深入分析全量财产保值率、购置成本分布与折旧损耗大盘
-        </p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-white tracking-tight flex items-center gap-2">
+            <BarChart3 className="w-6 h-6 text-cyan-400" />
+            财务分析
+          </h1>
+          <p className="text-xs text-slate-400 mt-1">
+            资产分类与折旧分析
+          </p>
+        </div>
+        <button
+          onClick={() => setIsSettingsOpen(true)}
+          className="p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-slate-300 hover:text-white hover:border-slate-700 transition-all"
+          title="系统设置"
+        >
+          <Settings className="w-4 h-4 text-slate-400" />
+        </button>
       </div>
 
       {/* 核心财务指标图表 */}
       <div className="glass-panel p-6 rounded-2xl border border-slate-800">
-        <h3 className="text-base font-bold text-white mb-2">各大类 Purchase 原价值 vs 当前评估值</h3>
-        <p className="text-xs text-slate-400 mb-6">直观展现哪类资产折旧速度快，哪类资产具备极佳保值性</p>
+        <h3 className="text-base font-bold text-white mb-1">购置原价 vs 当前估值</h3>
+        <p className="text-xs text-slate-400 mb-6">各分类保值与折旧对比</p>
         <div className="h-72">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={categoryComparison}>

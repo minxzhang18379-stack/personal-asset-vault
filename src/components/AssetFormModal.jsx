@@ -125,8 +125,8 @@ export default function AssetFormModal() {
       >
         {/* 标题 */}
         <div className="px-6 py-4 border-b border-slate-800 flex items-center justify-between bg-slate-900/60">
-          <h2 className="text-lg font-bold text-white">
-            {editingAsset.id ? '编辑资产记录' : '登记新财产资产'}
+          <h2 className="text-base font-bold text-white">
+            {editingAsset.id ? '编辑资产' : '新增资产'}
           </h2>
           <button
             onClick={() => setEditingAsset(null)}
@@ -145,7 +145,7 @@ export default function AssetFormModal() {
               required
               value={formData.name}
               onChange={e => setFormData({ ...formData, name: e.target.value })}
-              placeholder="如：MacBook Pro 16 英寸 或 特斯拉 Model Y"
+              placeholder=""
               className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2.5 text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500"
             />
           </div>

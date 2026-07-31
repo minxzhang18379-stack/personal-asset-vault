@@ -1,14 +1,14 @@
 import React, { useState } from 'react';
 import { useAssets } from '../context/AssetContext';
 import { 
-  Package, Plus, Minus, AlertTriangle, Calendar, 
+  Package, Plus, Minus, AlertTriangle, Calendar, Settings,
   MapPin, ShoppingCart, Trash2, Edit3, CheckCircle2, Clock 
 } from 'lucide-react';
 
 export default function ConsumablesTracker() {
   const { 
     consumables, locations, handleUpdateConsumableQty, 
-    handleSaveConsumable, handleDeleteConsumable 
+    handleSaveConsumable, handleDeleteConsumable, setIsSettingsOpen 
   } = useAssets();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -63,19 +63,28 @@ export default function ConsumablesTracker() {
         <div>
           <h1 className="text-2xl font-bold text-white tracking-tight flex items-center gap-2">
             <Package className="w-6 h-6 text-pink-400" />
-            快消耗材与日用品追踪
+            快消耗材
           </h1>
           <p className="text-xs text-slate-400 mt-1">
-            实时管理咖啡胶囊、食品、护肤化妆品及居家备用品的库存与保质期
+            库存与保质期追踪
           </p>
         </div>
-        <button
-          onClick={handleOpenAdd}
-          className="flex items-center justify-center gap-2 bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-500 hover:to-purple-500 text-white px-4 py-2.5 rounded-xl font-semibold text-sm transition-all shadow-lg shadow-pink-600/20"
-        >
-          <Plus className="w-4 h-4" />
-          登记新耗材
-        </button>
+        <div className="flex items-center gap-2.5">
+          <button
+            onClick={() => setIsSettingsOpen(true)}
+            className="p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-slate-300 hover:text-white hover:border-slate-700 transition-all"
+            title="系统设置"
+          >
+            <Settings className="w-4 h-4 text-slate-400" />
+          </button>
+          <button
+            onClick={handleOpenAdd}
+            className="flex items-center justify-center gap-2 bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-500 hover:to-purple-500 text-white px-4 py-2.5 rounded-xl font-semibold text-xs transition-all shadow-md shadow-pink-600/20 active:scale-[0.98]"
+          >
+            <Plus className="w-4 h-4" />
+            新增耗材
+          </button>
+        </div>
       </div>
 
       {/* 耗材卡片网格 */}

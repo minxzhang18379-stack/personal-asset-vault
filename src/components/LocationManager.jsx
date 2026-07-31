@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useAssets } from '../context/AssetContext';
-import { MapPin, Plus, Box, Bed, BookOpen, Tv, Car, ShieldCheck, ChevronRight, Package } from 'lucide-react';
+import { MapPin, Plus, Box, Bed, BookOpen, Tv, Car, ShieldCheck, ChevronRight, Package, Settings } from 'lucide-react';
 
 const ICON_MAP = {
   Bed: Bed,
@@ -12,7 +12,7 @@ const ICON_MAP = {
 };
 
 export default function LocationManager() {
-  const { locations, assets, consumables, handleSaveLocation, setDetailAsset } = useAssets();
+  const { locations, assets, consumables, handleSaveLocation, setDetailAsset, setIsSettingsOpen } = useAssets();
   const [selectedLocId, setSelectedLocId] = useState(locations[0]?.id || 'loc-1');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [newLocName, setNewLocName] = useState('');
@@ -44,19 +44,28 @@ export default function LocationManager() {
         <div>
           <h1 className="text-2xl font-bold text-white tracking-tight flex items-center gap-2">
             <MapPin className="w-6 h-6 text-cyan-400" />
-            家庭与场所收纳空间导航
+            空间收纳
           </h1>
           <p className="text-xs text-slate-400 mt-1">
-            可视化寻找存放位置，快速定位物品归属与密匣/柜屉清单
+            房间与物品存放目录
           </p>
         </div>
-        <button
-          onClick={() => setIsModalOpen(true)}
-          className="flex items-center justify-center gap-2 bg-slate-800 hover:bg-slate-700 text-white px-4 py-2.5 rounded-xl font-semibold text-sm transition-all border border-slate-700"
-        >
-          <Plus className="w-4 h-4" />
-          新增收纳地点/柜屉
-        </button>
+        <div className="flex items-center gap-2.5">
+          <button
+            onClick={() => setIsSettingsOpen(true)}
+            className="p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-slate-300 hover:text-white hover:border-slate-700 transition-all"
+            title="系统设置"
+          >
+            <Settings className="w-4 h-4 text-slate-400" />
+          </button>
+          <button
+            onClick={() => setIsModalOpen(true)}
+            className="flex items-center justify-center gap-2 bg-slate-800 hover:bg-slate-700 text-white px-4 py-2.5 rounded-xl font-semibold text-xs transition-all border border-slate-700"
+          >
+            <Plus className="w-4 h-4" />
+            新增位置
+          </button>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">

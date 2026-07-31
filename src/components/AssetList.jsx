@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useAssets } from '../context/AssetContext';
 import { 
-  Search, Filter, Plus, LayoutGrid, List, Tag, MapPin, Box,
+  Search, Filter, Plus, LayoutGrid, List, Tag, MapPin, Box, Settings,
   Eye, Edit3, Trash2, Calendar, ShieldCheck, FileText, Image as ImageIcon,
   PackageOpen, Smartphone, Laptop, Car, Watch, Shirt, Coffee, Gem, Home, Tv, Cpu, Camera, Headphones, Sparkles, Flame
 } from 'lucide-react';
@@ -36,7 +36,7 @@ const ICON_MAP = {
 export default function AssetList() {
   const { 
     assets, searchQuery, setSearchQuery, selectedCategory, setSelectedCategory, 
-    categories, setDetailAsset, setEditingAsset, handleDeleteAsset, locations 
+    categories, setDetailAsset, setEditingAsset, handleDeleteAsset, locations, setIsSettingsOpen 
   } = useAssets();
 
   const [selectedStatus, setSelectedStatus] = useState('ALL');
@@ -164,19 +164,28 @@ export default function AssetList() {
         <div>
           <h1 className="text-2xl font-bold text-white tracking-tight flex items-center gap-2">
             <Box className="w-6 h-6 text-cyan-400" />
-            资产与财产档案
+            资产档案
           </h1>
           <p className="text-xs text-slate-400 mt-1">
-            共收录 <span className="font-extrabold text-cyan-400 font-mono text-sm px-0.5">{filteredAssets.length}</span> 项个人固定资产与长期耐用品
+            共 <span className="font-extrabold text-cyan-400 font-mono text-xs px-0.5">{filteredAssets.length}</span> 项固定资产
           </p>
         </div>
-        <button
-          onClick={() => setEditingAsset({})}
-          className="flex items-center justify-center gap-2 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white px-4 py-2.5 rounded-xl font-semibold text-sm transition-colors shadow-lg shadow-cyan-600/20 active:scale-[0.98]"
-        >
-          <Plus className="w-4 h-4" />
-          登记新资产
-        </button>
+        <div className="flex items-center gap-2.5">
+          <button
+            onClick={() => setIsSettingsOpen(true)}
+            className="p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-slate-300 hover:text-white hover:border-slate-700 transition-all"
+            title="系统设置"
+          >
+            <Settings className="w-4 h-4 text-slate-400" />
+          </button>
+          <button
+            onClick={() => setEditingAsset({})}
+            className="flex items-center justify-center gap-2 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white px-4 py-2.5 rounded-xl font-semibold text-xs transition-colors shadow-md shadow-cyan-600/20 active:scale-[0.98]"
+          >
+            <Plus className="w-4 h-4" />
+            新增资产
+          </button>
+        </div>
       </div>
 
       {/* 搜索与多维度筛选栏 */}
