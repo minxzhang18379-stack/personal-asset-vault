@@ -35,7 +35,7 @@ function MainAppContent() {
     setAuthError('');
     const success = await login(usernameInput, passwordInput);
     if (!success) {
-      setAuthError('用户名或守护密码校验失败，请重新检查输入');
+      setAuthError('密码错误');
       setPasswordInput('');
     }
   };

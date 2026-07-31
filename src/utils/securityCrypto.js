@@ -37,9 +37,9 @@ export async function verifyPasswordHash(inputPassword, storedHash) {
 }
 
 /**
- * 获取默认密码 'admin' 的预置 SHA-256 哈希值
+ * 获取默认密码 'admin' 的预置 SHA-256 带盐哈希值
  */
-export const DEFAULT_ADMIN_HASH = '8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918';
+export const DEFAULT_ADMIN_HASH = '270e74dcd7e67f6577b0b7dd813183b42767eccc73fad1989d55825a00804b95';
 
 /**
  * 获取默认恢复密钥 'RECOVERY-2026-KEY' 的带盐预置 SHA-256 散列摘要 (全网无明文)
