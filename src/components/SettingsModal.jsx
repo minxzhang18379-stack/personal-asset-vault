@@ -4,7 +4,7 @@ import { X, Download, Upload, RefreshCw, Cloud, Database, ShieldCheck, Trash2 } 
 import { ApiService } from '../services/apiService';
 
 export default function SettingsModal() {
-  const { isSettingsOpen, setIsSettingsOpen, handleResetData, handleClearAllData, refreshData } = useAssets();
+  const { isSettingsOpen, setIsSettingsOpen, setIsSecurityModalOpen, handleResetData, handleClearAllData, refreshData } = useAssets();
 
   if (!isSettingsOpen) return null;
 
@@ -67,6 +67,24 @@ export default function SettingsModal() {
           <p className="text-xs text-slate-400">
             绑定 Cloudflare D1 (SQLite) 数据库与 Cloudflare R2 对象存储，支持全端数据同步与凭证云备份。
           </p>
+        </div>
+
+        {/* 用户与安全密码管理入口 */}
+        <div className="space-y-2">
+          <h4 className="text-xs font-bold uppercase text-slate-400 tracking-wider">用户与密码控制</h4>
+          <button
+            onClick={() => {
+              setIsSettingsOpen(false);
+              setIsSecurityModalOpen(true);
+            }}
+            className="w-full flex items-center justify-between p-3.5 rounded-xl bg-gradient-to-r from-amber-500/10 to-orange-500/10 border border-amber-500/30 hover:border-amber-500/60 text-amber-300 text-xs font-bold transition-all shadow-md shadow-amber-500/5 active:scale-[0.99]"
+          >
+            <span className="flex items-center gap-2">
+              <ShieldCheck className="w-4 h-4 text-amber-400" />
+              修改守护密码与成员权限
+            </span>
+            <span className="text-[11px] text-amber-400/80 underline">去设置 &rarr;</span>
+          </button>
         </div>
 
         {/* 数据备份与恢复 */}

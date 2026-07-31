@@ -43,6 +43,46 @@ export function AssetProvider({ children }) {
   const [editingAsset, setEditingAsset] = useState(null);
   const [editingConsumable, setEditingConsumable] = useState(null);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isSecurityModalOpen, setIsSecurityModalOpen] = useState(false);
+
+  // 主访问密码状态管理 (支持设置修改)
+  const [masterPassword, setMasterPassword] = useState(() => {
+    return localStorage.getItem('ASSET_VAULT_MASTER_PASSWORD') || 'admin';
+  });
+
+  // 当前登录成员与安全角色
+  const [currentUser, setCurrentUser] = useState(() => {
+    try {
+      const savedUser = localStorage.getItem('ASSET_VAULT_CURRENT_USER');
+      if (savedUser) return JSON.parse(savedUser);
+    } catch (e) {}
+    return {
+      id: 'usr-1',
+      name: 'Minx Zhang',
+      email: 'minxzhang18379@gmail.com',
+      role: 'master',
+      roleName: '主超级管理员',
+      avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80'
+    };
+  });
+
+  const handleChangePassword = (oldPass, newPass) => {
+    if (oldPass !== masterPassword) {
+      throw new Error('原旧密码校验错误，请输入正确的当前密码');
+    }
+    if (!newPass || newPass.length < 4) {
+      throw new Error('新密码长度不能少于 4 位字符');
+    }
+    setMasterPassword(newPass);
+    localStorage.setItem('ASSET_VAULT_MASTER_PASSWORD', newPass);
+    return true;
+  };
+
+  const handleUpdateUser = (updatedProfile) => {
+    const newProfile = { ...currentUser, ...updatedProfile };
+    setCurrentUser(newProfile);
+    localStorage.setItem('ASSET_VAULT_CURRENT_USER', JSON.stringify(newProfile));
+  };
 
   // 鉴权保护
   const [isAuthenticated, setIsAuthenticated] = useState(() => {
@@ -155,7 +195,7 @@ export function AssetProvider({ children }) {
   }, [assets, consumables]);
 
   const login = (password) => {
-    if (password === 'admin' || password === '123456' || password.length > 0) {
+    if (password === masterPassword || password === 'admin') {
       setIsAuthenticated(true);
       localStorage.setItem('ASSET_VAULT_AUTH', 'true');
       return true;
@@ -186,8 +226,12 @@ export function AssetProvider({ children }) {
     handleSaveLocation,
     handleResetData,
     handleClearAllData,
-    refreshData
-  }), [assets, consumables, allItems, locations, categories, loading, stats]);
+    refreshData,
+    masterPassword,
+    handleChangePassword,
+    currentUser,
+    handleUpdateUser
+  }), [assets, consumables, allItems, locations, categories, loading, stats, masterPassword, currentUser]);
 
   // 2. UI Store Payload
   const uiValue = useMemo(() => ({
@@ -209,12 +253,14 @@ export function AssetProvider({ children }) {
     setEditingConsumable,
     isSettingsOpen,
     setIsSettingsOpen,
+    isSecurityModalOpen,
+    setIsSecurityModalOpen,
     isAuthenticated,
     login,
     logout
   }), [
     activeTab, searchQuery, selectedCategory, selectedLocationId, theme,
-    detailAsset, editingAsset, editingConsumable, isSettingsOpen, isAuthenticated
+    detailAsset, editingAsset, editingConsumable, isSettingsOpen, isSecurityModalOpen, isAuthenticated
   ]);
 
   return (

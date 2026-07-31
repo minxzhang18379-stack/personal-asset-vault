@@ -8,6 +8,7 @@ import AnalyticsView from './components/AnalyticsView';
 import AssetDetailModal from './components/AssetDetailModal';
 import AssetFormModal from './components/AssetFormModal';
 import SettingsModal from './components/SettingsModal';
+import UserSecurityModal from './components/UserSecurityModal';
 import { 
   LayoutDashboard, Package, Box, MapPin, BarChart3, 
   Settings, Lock, Search, ShieldCheck, Diamond, Sparkles, LogOut, Menu, X 
@@ -16,6 +17,7 @@ import {
 function MainAppContent() {
   const { 
     activeTab, setActiveTab, setIsSettingsOpen, 
+    isSecurityModalOpen, setIsSecurityModalOpen,
     isAuthenticated, login, logout, stats 
   } = useAssets();
 
@@ -165,6 +167,10 @@ function MainAppContent() {
       <AssetDetailModal />
       <AssetFormModal />
       <SettingsModal />
+      <UserSecurityModal 
+        isOpen={isSecurityModalOpen} 
+        onClose={() => setIsSecurityModalOpen(false)} 
+      />
     </div>
   );
 }
