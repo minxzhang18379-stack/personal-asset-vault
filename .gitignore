@@ -30,6 +30,8 @@ pnpm-debug.log*
 .Trashes
 ehthumbs.db
 Thumbs.db
+*.HEIC
+*.heic
 
 # IDE & Editor files
 .vscode/*
