@@ -2,7 +2,7 @@ import React from 'react';
 import { useAssets } from '../context/AssetContext';
 import { 
   TrendingUp, Wallet, ShieldAlert, Sparkles, Package, ArrowUpRight, 
-  Clock, AlertTriangle, AlertCircle, PlusCircle, Layers, CheckCircle2 
+  Clock, AlertTriangle, AlertCircle, PlusCircle, Layers, CheckCircle2, Settings 
 } from 'lucide-react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, AreaChart, Area, XAxis, YAxis } from 'recharts';
 
