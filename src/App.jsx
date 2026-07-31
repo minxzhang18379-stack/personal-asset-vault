@@ -159,7 +159,7 @@ function MainAppContent() {
 
           {/* 侧边栏 */}
           <aside className={`
-            fixed md:static inset-y-0 left-0 z-40 w-64 bg-slate-950/95 md:bg-slate-950 border-r border-slate-800/80 p-5 flex flex-col justify-between transition-transform duration-300 ease-in-out backdrop-blur-xl md:backdrop-blur-none
+            fixed md:sticky top-0 h-screen inset-y-0 left-0 z-40 w-64 bg-slate-950/95 md:bg-slate-950 border-r border-slate-800/80 p-4 sm:p-5 flex flex-col justify-between shrink-0 overflow-y-auto transition-transform duration-300 ease-in-out backdrop-blur-xl md:backdrop-blur-none
             ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
           `}>
             <div className="space-y-6">
