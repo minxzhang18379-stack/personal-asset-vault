@@ -224,26 +224,18 @@ function MainAppContent() {
               </nav>
             </div>
 
-            <div className="space-y-2 border-t border-slate-800/80 pt-4">
+            <div className="space-y-1 border-t border-slate-800/80 pt-4">
               <button
                 onClick={() => setIsSettingsOpen(true)}
-                className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs text-slate-400 hover:text-white hover:bg-slate-900 transition-colors"
+                className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold text-slate-400 hover:text-white hover:bg-slate-900 transition-colors"
               >
                 <Settings className="w-4 h-4 text-slate-400" />
                 <span>系统设置</span>
               </button>
 
               <button
-                onClick={() => setIsSecurityModalOpen(true)}
-                className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs text-amber-400/90 hover:text-amber-300 hover:bg-amber-500/10 transition-colors"
-              >
-                <ShieldCheck className="w-4 h-4 text-amber-400" />
-                <span>账号与密码</span>
-              </button>
-
-              <button
                 onClick={logout}
-                className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs text-rose-400/80 hover:text-rose-300 hover:bg-rose-500/10 transition-colors"
+                className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold text-rose-400/90 hover:text-rose-300 hover:bg-rose-500/10 transition-colors"
               >
                 <LogOut className="w-4 h-4" />
                 <span>退出登录</span>
