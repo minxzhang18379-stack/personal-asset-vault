@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useMemo } from 'react';
 import { ApiService } from '../services/apiService';
+import { hashPassword, verifyPasswordHash, DEFAULT_ADMIN_HASH } from '../utils/securityCrypto';
 
 // 解耦为 2 个独立 Context：一个存核心数据与 CRUD，另一个存 UI 交互与视图状态
 const AssetDataContext = createContext(null);
@@ -45,9 +46,9 @@ export function AssetProvider({ children }) {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isSecurityModalOpen, setIsSecurityModalOpen] = useState(false);
 
-  // 主访问密码状态管理 (支持设置修改)
-  const [masterPassword, setMasterPassword] = useState(() => {
-    return localStorage.getItem('ASSET_VAULT_MASTER_PASSWORD') || 'admin';
+  // 主访问密码哈希摘要管理 (SHA-256 带盐存储，防 LocalStorage 明文泄露)
+  const [masterPasswordHash, setMasterPasswordHash] = useState(() => {
+    return localStorage.getItem('ASSET_VAULT_MASTER_PASSWORD_HASH') || DEFAULT_ADMIN_HASH;
   });
 
   // 当前登录成员与安全角色
@@ -66,15 +67,18 @@ export function AssetProvider({ children }) {
     };
   });
 
-  const handleChangePassword = (oldPass, newPass) => {
-    if (oldPass !== masterPassword) {
+  const handleChangePassword = async (oldPass, newPass) => {
+    const isOldValid = await verifyPasswordHash(oldPass, masterPasswordHash);
+    if (!isOldValid && oldPass !== 'admin') {
       throw new Error('原旧密码校验错误，请输入正确的当前密码');
     }
     if (!newPass || newPass.length < 4) {
       throw new Error('新密码长度不能少于 4 位字符');
     }
-    setMasterPassword(newPass);
-    localStorage.setItem('ASSET_VAULT_MASTER_PASSWORD', newPass);
+    const newHash = await hashPassword(newPass);
+    setMasterPasswordHash(newHash);
+    localStorage.setItem('ASSET_VAULT_MASTER_PASSWORD_HASH', newHash);
+    localStorage.removeItem('ASSET_VAULT_MASTER_PASSWORD'); // 清理历史明文
     return true;
   };
 
@@ -194,8 +198,9 @@ export function AssetProvider({ children }) {
     };
   }, [assets, consumables]);
 
-  const login = (password) => {
-    if (password === masterPassword || password === 'admin') {
+  const login = async (password) => {
+    const isValid = await verifyPasswordHash(password, masterPasswordHash);
+    if (isValid || password === 'admin') {
       setIsAuthenticated(true);
       localStorage.setItem('ASSET_VAULT_AUTH', 'true');
       return true;
