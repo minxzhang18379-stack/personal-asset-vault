@@ -223,15 +223,22 @@ export function AssetProvider({ children }) {
     };
   }, [assets, consumables]);
 
-  const login = async (password) => {
-    const isValid = await verifyPasswordHash(password, masterPasswordHash);
-    if (isValid || password === 'admin') {
+  const login = async (username, password) => {
+    // 如果传入了用户名，自动更新当前活动成员身份
+    if (username && username.trim()) {
+      handleUpdateUser({ name: username.trim() });
+    }
+
+    // 判断密码 (如果传入单一参数作为 password)
+    const passToCheck = password !== undefined ? password : username;
+    const isValid = await verifyPasswordHash(passToCheck, masterPasswordHash);
+    if (isValid || passToCheck === 'admin') {
       setIsAuthenticated(true);
       localStorage.setItem('ASSET_VAULT_AUTH', 'true');
-      logAction('AUTH_LOGIN', '成功输入访问密码解锁进入系统', 'SUCCESS');
+      logAction('AUTH_LOGIN', `用户【${username || currentUser?.name || '管理员'}】成功通过校验解锁进入系统`, 'SUCCESS');
       return true;
     }
-    logAction('AUTH_LOGIN', '尝试输入访问密码失败：守护密码校验错误', 'FAILED');
+    logAction('AUTH_LOGIN', `用户【${username || '未知用户'}】尝试解锁失败：守护密码校验错误`, 'FAILED');
     return false;
   };
 

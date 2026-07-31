@@ -12,7 +12,7 @@ import UserSecurityModal from './components/UserSecurityModal';
 import AuditLogModal from './components/AuditLogModal';
 import { 
   LayoutDashboard, Package, Box, MapPin, BarChart3, 
-  Settings, Lock, Search, ShieldCheck, Diamond, Sparkles, LogOut, Menu, X, AlertCircle 
+  Settings, Lock, Search, ShieldCheck, Diamond, Sparkles, LogOut, Menu, X, AlertCircle, User 
 } from 'lucide-react';
 
 function MainAppContent() {
@@ -20,9 +20,10 @@ function MainAppContent() {
     activeTab, setActiveTab, setIsSettingsOpen, 
     isSecurityModalOpen, setIsSecurityModalOpen,
     isAuditLogOpen, setIsAuditLogOpen,
-    isAuthenticated, login, logout, stats 
+    isAuthenticated, login, logout, stats, currentUser 
   } = useAssets();
 
+  const [usernameInput, setUsernameInput] = useState(currentUser?.name || 'Minx Zhang');
   const [passwordInput, setPasswordInput] = useState('');
   const [authError, setAuthError] = useState('');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -30,9 +31,9 @@ function MainAppContent() {
   const handleLoginSubmit = async (e) => {
     e.preventDefault();
     setAuthError('');
-    const success = await login(passwordInput);
+    const success = await login(usernameInput, passwordInput);
     if (!success) {
-      setAuthError('守护密码校验失败，请输入正确的访问密码 (默认初始密码为 admin)');
+      setAuthError('用户名或守护密码校验失败，请重新检查输入 (默认初始密码为 admin)');
       setPasswordInput('');
     }
   };
@@ -51,9 +52,33 @@ function MainAppContent() {
             <h1 className="text-2xl font-black text-white tracking-tight">Cloudflare Asset Vault</h1>
             <p className="text-xs text-slate-400 mt-2">个人财产与全生命周期资产管理系统</p>
           </div>
+
           <form onSubmit={handleLoginSubmit} className="space-y-4 text-left">
+            {/* 用户名输入框 */}
             <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1.5">输入访问守护密码</label>
+              <label className="block text-xs font-semibold text-slate-300 mb-1.5 flex items-center gap-1.5">
+                <User className="w-3.5 h-3.5 text-cyan-400" />
+                登录账号 / 用户姓名
+              </label>
+              <input
+                type="text"
+                required
+                value={usernameInput}
+                onChange={e => {
+                  setUsernameInput(e.target.value);
+                  if (authError) setAuthError('');
+                }}
+                placeholder="用户名，如 Minx Zhang / admin"
+                className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-cyan-500 transition-colors font-medium"
+              />
+            </div>
+
+            {/* 访问守护密码输入框 */}
+            <div>
+              <label className="block text-xs font-semibold text-slate-300 mb-1.5 flex items-center gap-1.5">
+                <Lock className="w-3.5 h-3.5 text-amber-400" />
+                访问守护密码
+              </label>
               <input
                 type="password"
                 required
