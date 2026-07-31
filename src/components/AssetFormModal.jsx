@@ -2,25 +2,62 @@ import React, { useState, useEffect } from 'react';
 import { useAssets } from '../context/AssetContext';
 import { 
   X, Upload, Plus, Trash2, Image as ImageIcon,
-  Smartphone, Laptop, Car, Watch, Shirt, Coffee, Home, Gem, Tv, Cpu, Camera, Headphones, Sparkles, Box
+  Smartphone, Tablet, Laptop, Monitor, Tv, Gamepad2, Headphones, Speaker, Camera, Watch, Cpu, HardDrive, Printer, Wifi,
+  Car, Bike, Plane, Ship, Fuel,
+  Home, Bed, Sofa, Lamp, Coffee, Utensils, Wine, Shirt, Scissors,
+  Gem, Sparkles, Crown, Briefcase, Glasses, Tag,
+  Box, Key, ShieldCheck, CreditCard
 } from 'lucide-react';
 import CustomSelect from './CustomSelect';
 
 const ICON_OPTIONS = [
-  { key: 'Smartphone', label: '手机', icon: Smartphone },
-  { key: 'Laptop', label: '电脑', icon: Laptop },
-  { key: 'Car', label: '汽车', icon: Car },
-  { key: 'Watch', label: '腕表', icon: Watch },
-  { key: 'Shirt', label: '服饰', icon: Shirt },
-  { key: 'Coffee', label: '饮品/耗材', icon: Coffee },
-  { key: 'Home', label: '房产/空间', icon: Home },
-  { key: 'Gem', label: '珠宝首饰', icon: Gem },
-  { key: 'Tv', label: '家电/影音', icon: Tv },
-  { key: 'Cpu', label: '数码硬件', icon: Cpu },
+  // 数码电子
+  { key: 'Smartphone', label: 'iPhone', icon: Smartphone },
+  { key: 'Tablet', label: 'iPad', icon: Tablet },
+  { key: 'Laptop', label: 'MacBook', icon: Laptop },
+  { key: 'Monitor', label: '显示器', icon: Monitor },
+  { key: 'Tv', label: '电视影音', icon: Tv },
+  { key: 'Gamepad2', label: '游戏机', icon: Gamepad2 },
+  { key: 'Headphones', label: '耳机', icon: Headphones },
+  { key: 'Speaker', label: '音响设备', icon: Speaker },
   { key: 'Camera', label: '摄影仪器', icon: Camera },
-  { key: 'Headphones', label: '耳机音响', icon: Headphones },
-  { key: 'Sparkles', label: '奢侈品', icon: Sparkles },
-  { key: 'Box', label: '通用箱架', icon: Box }
+  { key: 'Watch', label: 'AppleWatch', icon: Watch },
+  { key: 'Cpu', label: '主机芯片', icon: Cpu },
+  { key: 'HardDrive', label: '移动存储', icon: HardDrive },
+  { key: 'Printer', label: '打印设备', icon: Printer },
+  { key: 'Wifi', label: '网络设备', icon: Wifi },
+
+  // 出行交通
+  { key: 'Car', label: '汽车座驾', icon: Car },
+  { key: 'Bike', label: '骑行车具', icon: Bike },
+  { key: 'Plane', label: '航空航模', icon: Plane },
+  { key: 'Ship', label: '游艇水上', icon: Ship },
+  { key: 'Fuel', label: '能源油卡', icon: Fuel },
+
+  // 家居生活
+  { key: 'Home', label: '房产不动产', icon: Home },
+  { key: 'Bed', label: '寝具床品', icon: Bed },
+  { key: 'Sofa', label: '家具整装', icon: Sofa },
+  { key: 'Lamp', label: '灯具照明', icon: Lamp },
+  { key: 'Coffee', label: '咖啡饮品', icon: Coffee },
+  { key: 'Utensils', label: '厨具餐具', icon: Utensils },
+  { key: 'Wine', label: '名酒酒藏', icon: Wine },
+  { key: 'Shirt', label: '服饰鞋包', icon: Shirt },
+  { key: 'Scissors', label: '美容护理', icon: Scissors },
+
+  // 奢品收藏
+  { key: 'Gem', label: '珠宝首饰', icon: Gem },
+  { key: 'Sparkles', label: '奢侈名品', icon: Sparkles },
+  { key: 'Crown', label: '艺术藏品', icon: Crown },
+  { key: 'Briefcase', label: '皮具公文', icon: Briefcase },
+  { key: 'Glasses', label: '眼镜饰品', icon: Glasses },
+  { key: 'Tag', label: '名牌潮品', icon: Tag },
+
+  // 箱包与防护
+  { key: 'Box', label: '通用收纳', icon: Box },
+  { key: 'Key', label: '密匣钥匙', icon: Key },
+  { key: 'ShieldCheck', label: '保险保单', icon: ShieldCheck },
+  { key: 'CreditCard', label: '卡卷资产', icon: CreditCard }
 ];
 
 export default function AssetFormModal() {

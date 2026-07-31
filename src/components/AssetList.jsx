@@ -3,7 +3,11 @@ import { useAssets } from '../context/AssetContext';
 import { 
   Search, Filter, Plus, LayoutGrid, List, Tag, MapPin, Box, Settings,
   Eye, Edit3, Trash2, Calendar, ShieldCheck, FileText, Image as ImageIcon,
-  PackageOpen, Smartphone, Laptop, Car, Watch, Shirt, Coffee, Gem, Home, Tv, Cpu, Camera, Headphones, Sparkles, Flame
+  Smartphone, Tablet, Laptop, Monitor, Tv, Gamepad2, Headphones, Speaker, Camera, Watch, Cpu, HardDrive, Printer, Wifi,
+  Car, Bike, Plane, Ship, Fuel,
+  Home, Bed, Sofa, Lamp, Coffee, Utensils, Wine, Shirt, Scissors,
+  Gem, Sparkles, Crown, Briefcase, Glasses,
+  Key, CreditCard
 } from 'lucide-react';
 import EmptyState from './EmptyState';
 import { calculateDailyCost } from '../utils/costCalculator';
@@ -17,20 +21,11 @@ const STATUS_OPTIONS = [
 ];
 
 const ICON_MAP = {
-  Smartphone,
-  Laptop,
-  Car,
-  Watch,
-  Shirt,
-  Coffee,
-  Home,
-  Gem,
-  Tv,
-  Cpu,
-  Camera,
-  Headphones,
-  Sparkles,
-  Box
+  Smartphone, Tablet, Laptop, Monitor, Tv, Gamepad2, Headphones, Speaker, Camera, Watch, Cpu, HardDrive, Printer, Wifi,
+  Car, Bike, Plane, Ship, Fuel,
+  Home, Bed, Sofa, Lamp, Coffee, Utensils, Wine, Shirt, Scissors,
+  Gem, Sparkles, Crown, Briefcase, Glasses, Tag,
+  Box, Key, ShieldCheck, CreditCard
 };
 
 export default function AssetList() {
