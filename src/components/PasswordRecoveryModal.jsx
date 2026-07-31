@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAssets } from '../context/AssetContext';
 import { 
   X, ShieldAlert, KeyRound, CheckCircle2, AlertCircle, RefreshCw, Lock, Eye, EyeOff
@@ -15,6 +15,17 @@ export default function PasswordRecoveryModal({ isOpen, onClose }) {
   const [errorMsg, setErrorMsg] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // 监听 ESC 键关闭弹窗
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape' && isOpen) {
+        onClose();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose]);
 
   if (!isOpen) return null;
 
@@ -35,14 +46,14 @@ export default function PasswordRecoveryModal({ isOpen, onClose }) {
     try {
       setIsSubmitting(true);
       await handleForceResetPassword(accountInput, recoveryKey, newPassword);
-      setSuccessMsg(`账户【${accountInput}】密码已成功强制重置！新密码即刻生效。`);
+      setSuccessMsg(`账户【${accountInput}】密码已成功重置！`);
       setAccountInput('');
       setRecoveryKey('');
       setNewPassword('');
       setConfirmPassword('');
       if (showToast) showToast('密码重置成功', 'success');
     } catch (err) {
-      setErrorMsg(err.message || '强制重置失败');
+      setErrorMsg(err.message || '重置失败');
     } finally {
       setIsSubmitting(false);
     }
@@ -51,11 +62,11 @@ export default function PasswordRecoveryModal({ isOpen, onClose }) {
   return (
     <div 
       onClick={onClose}
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-md animate-fadeIn"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-md animate-fadeIn cursor-pointer"
     >
       <div 
         onClick={(e) => e.stopPropagation()}
-        className="glass-panel w-full max-w-md rounded-3xl overflow-hidden shadow-2xl border border-rose-500/30 flex flex-col"
+        className="glass-panel w-full max-w-md rounded-3xl overflow-hidden shadow-2xl border border-rose-500/30 flex flex-col cursor-default"
       >
         {/* 标题栏 */}
         <div className="px-6 py-4 border-b border-slate-800 flex items-center justify-between bg-slate-900/90">
@@ -91,14 +102,11 @@ export default function PasswordRecoveryModal({ isOpen, onClose }) {
             />
           </div>
 
-          {/* 安全恢复密钥 */}
+          {/* 安全恢复密钥 (已隐藏明文泄露) */}
           <div>
-            <div className="flex items-center justify-between mb-1.5">
-              <label className="block text-xs font-semibold text-slate-300">安全恢复密钥</label>
-              <span className="text-[10px] text-slate-500 font-mono">密钥: RECOVERY-2026-KEY</span>
-            </div>
+            <label className="block text-xs font-semibold text-slate-300 mb-1.5">安全恢复密钥</label>
             <input
-              type="text"
+              type="password"
               required
               value={recoveryKey}
               onChange={(e) => { setRecoveryKey(e.target.value); setErrorMsg(''); }}
