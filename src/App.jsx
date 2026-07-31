@@ -13,7 +13,7 @@ import AuditLogModal from './components/AuditLogModal';
 import PasswordRecoveryModal from './components/PasswordRecoveryModal';
 import { 
   LayoutDashboard, Package, Box, MapPin, BarChart3, 
-  Settings, Lock, Search, ShieldCheck, Diamond, Sparkles, LogOut, Menu, X, AlertCircle, User, ShieldAlert 
+  Settings, Lock, Search, ShieldCheck, Diamond, Sparkles, LogOut, Menu, X, AlertCircle, User, ShieldAlert, LogIn, RefreshCw 
 } from 'lucide-react';
 
 function MainAppContent() {
@@ -119,8 +119,9 @@ function MainAppContent() {
 
               <button
                 type="submit"
-                className="w-full bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 active:scale-[0.98] text-white font-bold py-3 rounded-xl shadow-lg shadow-cyan-600/20 text-sm transition-all"
+                className="w-full bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 active:scale-[0.98] text-white font-bold py-3 rounded-xl shadow-lg shadow-cyan-600/20 text-sm transition-all flex items-center justify-center gap-2"
               >
+                <LogIn className="w-4 h-4" />
                 登录
               </button>
 
@@ -305,13 +306,17 @@ class ErrorBoundary extends React.Component {
       return (
         <div className="min-h-screen flex items-center justify-center p-4 bg-slate-950 text-white text-center">
           <div className="glass-panel p-8 rounded-3xl max-w-md border border-rose-500/30 space-y-4">
-            <div className="text-rose-400 font-bold text-lg">页面渲染遇到了意料之外的错误</div>
-            <p className="text-xs text-slate-400">{this.state.error?.toString()}</p>
+            <div className="w-12 h-12 rounded-2xl bg-rose-500/10 text-rose-400 border border-rose-500/20 flex items-center justify-center mx-auto">
+              <AlertCircle className="w-6 h-6" />
+            </div>
+            <div className="text-rose-400 font-bold text-base">渲染异常</div>
+            <p className="text-xs text-slate-400 font-mono">{this.state.error?.toString()}</p>
             <button
               onClick={this.handleReset}
-              className="bg-cyan-600 hover:bg-cyan-500 text-white px-5 py-2 rounded-xl text-xs font-bold"
+              className="bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white px-5 py-2.5 rounded-xl text-xs font-bold transition-all shadow-md shadow-cyan-600/20 flex items-center justify-center gap-2 mx-auto"
             >
-              清除本地缓存并重新加载
+              <RefreshCw className="w-3.5 h-3.5" />
+              重新加载
             </button>
           </div>
         </div>
