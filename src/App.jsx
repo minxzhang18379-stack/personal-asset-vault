@@ -23,7 +23,7 @@ function MainAppContent() {
     isAuthenticated, login, logout, stats, currentUser 
   } = useAssets();
 
-  const [usernameInput, setUsernameInput] = useState(currentUser?.name || 'Minx Zhang');
+  const [usernameInput, setUsernameInput] = useState('');
   const [passwordInput, setPasswordInput] = useState('');
   const [authError, setAuthError] = useState('');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -33,7 +33,7 @@ function MainAppContent() {
     setAuthError('');
     const success = await login(usernameInput, passwordInput);
     if (!success) {
-      setAuthError('用户名或守护密码校验失败，请重新检查输入 (默认初始密码为 admin)');
+      setAuthError('用户名或守护密码校验失败，请重新检查输入');
       setPasswordInput('');
     }
   };
@@ -68,7 +68,7 @@ function MainAppContent() {
                   setUsernameInput(e.target.value);
                   if (authError) setAuthError('');
                 }}
-                placeholder="用户名，如 Minx Zhang / admin"
+                placeholder=""
                 className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-base sm:text-sm text-white focus:outline-none focus:border-cyan-500 transition-colors font-medium"
               />
             </div>
@@ -87,7 +87,7 @@ function MainAppContent() {
                   setPasswordInput(e.target.value);
                   if (authError) setAuthError('');
                 }}
-                placeholder="默认密码：admin"
+                placeholder=""
                 className={`w-full bg-slate-900 border rounded-xl px-4 py-3 text-base sm:text-sm text-white focus:outline-none transition-colors ${
                   authError ? 'border-rose-500/80 focus:border-rose-500' : 'border-slate-800 focus:border-cyan-500'
                 }`}
