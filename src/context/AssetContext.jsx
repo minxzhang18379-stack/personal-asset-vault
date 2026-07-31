@@ -55,6 +55,15 @@ export function AssetProvider({ children }) {
     return localStorage.getItem('ASSET_VAULT_RECOVERY_KEY_HASH') || DEFAULT_RECOVERY_KEY_HASH;
   });
 
+  // 获取最新本地存储的账号列表 (防 React 闭包旧数据)
+  const getLatestAccounts = () => {
+    try {
+      const saved = localStorage.getItem('ASSET_VAULT_USER_ACCOUNTS_V3');
+      if (saved) return JSON.parse(saved);
+    } catch (e) {}
+    return userAccounts;
+  };
+
   // 应急强制重置密码方法 (基于 Web Crypto SHA-256 恢复密钥散列校验)
   const handleForceResetPassword = async (accountInput, inputRecoveryKey, newPassword) => {
     if (!accountInput || !accountInput.trim()) {
@@ -72,17 +81,20 @@ export function AssetProvider({ children }) {
     }
 
     const inputStr = accountInput.trim().toLowerCase();
-    let targetUser = userAccounts.find(acc => 
+    const cleanNewPassword = newPassword.trim();
+    const latestAccounts = getLatestAccounts();
+
+    let targetUser = latestAccounts.find(acc => 
       (acc.username && acc.username.toLowerCase() === inputStr) ||
       (acc.name && acc.name.toLowerCase() === inputStr) ||
       (acc.email && acc.email.toLowerCase() === inputStr)
     );
 
-    const newHash = await hashPassword(newPassword);
+    const newHash = await hashPassword(cleanNewPassword);
 
     if (targetUser) {
       const updatedUser = { ...targetUser, passwordHash: newHash };
-      const updatedAccounts = userAccounts.map(acc => acc.id === targetUser.id ? updatedUser : acc);
+      const updatedAccounts = latestAccounts.map(acc => acc.id === targetUser.id ? updatedUser : acc);
       saveAccountsList(updatedAccounts);
       if (currentUser?.id === targetUser.id) {
         setCurrentUser(updatedUser);
@@ -103,7 +115,7 @@ export function AssetProvider({ children }) {
         roleName: '超级管理员',
         passwordHash: newHash
       };
-      saveAccountsList([...userAccounts, newAcc]);
+      saveAccountsList([...latestAccounts, newAcc]);
       logAction('SECURITY_AUTH', `使用应急恢复密钥强制创建并重置了新账户【${newAcc.name}】的密码`, 'WARNING');
     }
     return true;
@@ -355,8 +367,10 @@ export function AssetProvider({ children }) {
     const inputStr = usernameOrEmail.trim().toLowerCase();
     const cleanPassword = password ? password.trim() : '';
 
+    const latestAccounts = getLatestAccounts();
+
     // 在多用户存储表中查找匹配账号或邮箱
-    let targetUser = userAccounts.find(acc => 
+    let targetUser = latestAccounts.find(acc => 
       (acc.username && acc.username.toLowerCase() === inputStr) ||
       (acc.name && acc.name.toLowerCase() === inputStr) ||
       (acc.email && acc.email.toLowerCase() === inputStr)
@@ -378,9 +392,8 @@ export function AssetProvider({ children }) {
         roleName: '主超级管理员',
         passwordHash: userHash
       };
-      const updatedList = [...userAccounts, targetUser];
-      setUserAccounts(updatedList);
-      localStorage.setItem('ASSET_VAULT_USER_ACCOUNTS_V3', JSON.stringify(updatedList));
+      const updatedList = [...latestAccounts, targetUser];
+      saveAccountsList(updatedList);
     }
 
     // 校验该特定账户专属的独立 SHA-256 密码哈希摘要
