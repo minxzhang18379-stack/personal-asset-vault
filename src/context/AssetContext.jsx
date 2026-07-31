@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useMemo } from 'react';
 import { ApiService } from '../services/apiService';
-import { hashPassword, verifyPasswordHash, DEFAULT_ADMIN_HASH } from '../utils/securityCrypto';
+import { hashPassword, verifyPasswordHash, DEFAULT_ADMIN_HASH, DEFAULT_RECOVERY_KEY_HASH } from '../utils/securityCrypto';
 import { logEvent as createLogEvent, getAuditLogs } from '../utils/logger';
 
 // 解耦为 2 个独立 Context：一个存核心数据与 CRUD，另一个存 UI 交互与视图状态
@@ -49,19 +49,23 @@ export function AssetProvider({ children }) {
   const [isAuditLogOpen, setIsAuditLogOpen] = useState(false);
   const [isRecoveryOpen, setIsRecoveryOpen] = useState(false);
 
-  // 安全恢复密钥存储 (Master Recovery Key)
-  const [masterRecoveryKey] = useState(() => {
-    return localStorage.getItem('ASSET_VAULT_RECOVERY_KEY') || 'RECOVERY-2026-KEY';
+  // 安全恢复密钥哈希散列摘要存储 (无明文 Key)
+  const [masterRecoveryKeyHash] = useState(() => {
+    localStorage.removeItem('ASSET_VAULT_RECOVERY_KEY'); // 彻底抹除浏览器明文残留
+    return localStorage.getItem('ASSET_VAULT_RECOVERY_KEY_HASH') || DEFAULT_RECOVERY_KEY_HASH;
   });
 
-  // 应急强制重置密码方法
+  // 应急强制重置密码方法 (基于 Web Crypto SHA-256 恢复密钥散列校验)
   const handleForceResetPassword = async (accountInput, inputRecoveryKey, newPassword) => {
     if (!accountInput || !accountInput.trim()) {
       throw new Error('请输入要重置的账号或关联邮箱');
     }
-    if (!inputRecoveryKey || inputRecoveryKey.trim() !== masterRecoveryKey) {
-      logAction('SECURITY_ALERT', `尝试强制重置密码失败：恢复密钥错误【${inputRecoveryKey}】`, 'FAILED');
-      throw new Error('安全恢复密钥校验错误，无法执行强制重置');
+
+    // SHA-256 散列校验输入的恢复密钥 (F12 与抓包零明文)
+    const isKeyValid = await verifyPasswordHash(inputRecoveryKey?.trim(), masterRecoveryKeyHash);
+    if (!isKeyValid) {
+      logAction('SECURITY_ALERT', '尝试重置密码失败：安全恢复密钥校验错误', 'FAILED');
+      throw new Error('安全恢复密钥校验错误，无法执行重置');
     }
     if (!newPassword || newPassword.length < 4) {
       throw new Error('新密码不能少于 4 位字符');
