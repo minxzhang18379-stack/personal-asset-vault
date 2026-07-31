@@ -61,7 +61,11 @@ export default function PasswordRecoveryModal({ isOpen, onClose }) {
 
   return (
     <div 
-      onClick={onClose}
+      onClick={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        onClose();
+      }}
       className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-md animate-fadeIn cursor-pointer"
     >
       <div 
