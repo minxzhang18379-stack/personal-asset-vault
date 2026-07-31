@@ -11,7 +11,7 @@ import SettingsModal from './components/SettingsModal';
 import UserSecurityModal from './components/UserSecurityModal';
 import { 
   LayoutDashboard, Package, Box, MapPin, BarChart3, 
-  Settings, Lock, Search, ShieldCheck, Diamond, Sparkles, LogOut, Menu, X 
+  Settings, Lock, Search, ShieldCheck, Diamond, Sparkles, LogOut, Menu, X, AlertCircle 
 } from 'lucide-react';
 
 function MainAppContent() {
@@ -22,13 +22,26 @@ function MainAppContent() {
   } = useAssets();
 
   const [passwordInput, setPasswordInput] = useState('');
+  const [authError, setAuthError] = useState('');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  const handleLoginSubmit = async (e) => {
+    e.preventDefault();
+    setAuthError('');
+    const success = await login(passwordInput);
+    if (!success) {
+      setAuthError('守护密码校验失败，请输入正确的访问密码 (默认初始密码为 admin)');
+      setPasswordInput('');
+    }
+  };
 
   // 简单安全关卡登录
   if (!isAuthenticated) {
     return (
       <div className="min-h-screen flex items-center justify-center p-4 bg-slate-950">
-        <div className="glass-panel w-full max-w-md p-8 rounded-3xl border border-slate-800 space-y-6 text-center shadow-2xl">
+        <div className={`glass-panel w-full max-w-md p-8 rounded-3xl border space-y-6 text-center shadow-2xl transition-all ${
+          authError ? 'border-rose-500/60 bg-rose-950/10 animate-shake' : 'border-slate-800'
+        }`}>
           <div className="w-16 h-16 rounded-2xl bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 flex items-center justify-center mx-auto glow-animation">
             <Diamond className="w-8 h-8" />
           </div>
@@ -36,21 +49,34 @@ function MainAppContent() {
             <h1 className="text-2xl font-black text-white tracking-tight">Cloudflare Asset Vault</h1>
             <p className="text-xs text-slate-400 mt-2">个人财产与全生命周期资产管理系统</p>
           </div>
-          <form onSubmit={(e) => { e.preventDefault(); login(passwordInput); }} className="space-y-4 text-left">
+          <form onSubmit={handleLoginSubmit} className="space-y-4 text-left">
             <div>
               <label className="block text-xs font-semibold text-slate-300 mb-1.5">输入访问守护密码</label>
               <input
                 type="password"
                 required
                 value={passwordInput}
-                onChange={e => setPasswordInput(e.target.value)}
+                onChange={e => {
+                  setPasswordInput(e.target.value);
+                  if (authError) setAuthError('');
+                }}
                 placeholder="默认密码：admin"
-                className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-cyan-500"
+                className={`w-full bg-slate-900 border rounded-xl px-4 py-3 text-sm text-white focus:outline-none transition-colors ${
+                  authError ? 'border-rose-500/80 focus:border-rose-500' : 'border-slate-800 focus:border-cyan-500'
+                }`}
               />
             </div>
+
+            {authError && (
+              <div className="p-3 rounded-xl bg-rose-950/40 border border-rose-500/40 text-rose-300 text-xs flex items-center gap-2 animate-fadeIn">
+                <AlertCircle className="w-4 h-4 shrink-0 text-rose-400" />
+                {authError}
+              </div>
+            )}
+
             <button
               type="submit"
-              className="w-full bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-bold py-3 rounded-xl shadow-lg shadow-cyan-600/20 text-sm transition-all"
+              className="w-full bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 active:scale-[0.98] text-white font-bold py-3 rounded-xl shadow-lg shadow-cyan-600/20 text-sm transition-all"
             >
               解锁进入资产金库
             </button>
