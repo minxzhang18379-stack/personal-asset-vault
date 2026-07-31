@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, useMemo } from 'react';
 import { ApiService } from '../services/apiService';
 import { hashPassword, verifyPasswordHash, DEFAULT_ADMIN_HASH } from '../utils/securityCrypto';
+import { logEvent as createLogEvent, getAuditLogs } from '../utils/logger';
 
 // 解耦为 2 个独立 Context：一个存核心数据与 CRUD，另一个存 UI 交互与视图状态
 const AssetDataContext = createContext(null);
@@ -45,6 +46,19 @@ export function AssetProvider({ children }) {
   const [editingConsumable, setEditingConsumable] = useState(null);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isSecurityModalOpen, setIsSecurityModalOpen] = useState(false);
+  const [isAuditLogOpen, setIsAuditLogOpen] = useState(false);
+
+  // 180 天合规日志 State
+  const [auditLogs, setAuditLogs] = useState(() => getAuditLogs());
+
+  const refreshAuditLogs = () => {
+    setAuditLogs(getAuditLogs());
+  };
+
+  const logAction = (eventType, details, status = 'SUCCESS') => {
+    createLogEvent(eventType, details, status, `${currentUser?.name || 'Minx Zhang'} (${currentUser?.roleName || '主超级管理员'})`);
+    refreshAuditLogs();
+  };
 
   // 主访问密码哈希摘要管理 (SHA-256 带盐存储，防 LocalStorage 明文泄露)
   const [masterPasswordHash, setMasterPasswordHash] = useState(() => {
@@ -70,6 +84,7 @@ export function AssetProvider({ children }) {
   const handleChangePassword = async (oldPass, newPass) => {
     const isOldValid = await verifyPasswordHash(oldPass, masterPasswordHash);
     if (!isOldValid && oldPass !== 'admin') {
+      logAction('PASSWORD_CHANGE', '修改主守护密码尝试失败：原旧密码校验错误', 'FAILED');
       throw new Error('原旧密码校验错误，请输入正确的当前密码');
     }
     if (!newPass || newPass.length < 4) {
@@ -79,6 +94,7 @@ export function AssetProvider({ children }) {
     setMasterPasswordHash(newHash);
     localStorage.setItem('ASSET_VAULT_MASTER_PASSWORD_HASH', newHash);
     localStorage.removeItem('ASSET_VAULT_MASTER_PASSWORD'); // 清理历史明文
+    logAction('PASSWORD_CHANGE', '成功修改金库主守护密码 (更新 SHA-256 哈希摘要)', 'SUCCESS');
     return true;
   };
 
@@ -115,14 +131,18 @@ export function AssetProvider({ children }) {
 
   // 资产/耗材/位置 API 操作
   const handleSaveAsset = async (assetData) => {
+    const isEdit = Boolean(assetData.id);
     await ApiService.saveAsset(assetData);
+    logAction('ASSET_CREATE', `${isEdit ? '更新修改' : '登记新增'}耐用资产【${assetData.name}】`, 'SUCCESS');
     await refreshData();
     setEditingAsset(null);
   };
 
   const handleDeleteAsset = async (id) => {
+    const target = assets.find(a => a.id === id);
     if (window.confirm('确定要彻底删除该资产记录吗？此操作无法撤销。')) {
       await ApiService.deleteAsset(id);
+      logAction('ASSET_DELETE', `彻底删除资产记录【${target?.name || id}】`, 'WARNING');
       if (detailAsset && detailAsset.id === id) setDetailAsset(null);
       await refreshData();
     }
@@ -130,6 +150,7 @@ export function AssetProvider({ children }) {
 
   const handleSaveConsumable = async (itemData) => {
     await ApiService.saveConsumable(itemData);
+    logAction('ASSET_CREATE', `保存快消耗材【${itemData.name}】库存数量 (${itemData.quantity}${itemData.unit})`, 'SUCCESS');
     await refreshData();
     setEditingConsumable(null);
   };
@@ -142,18 +163,21 @@ export function AssetProvider({ children }) {
   const handleDeleteConsumable = async (id) => {
     if (window.confirm('确定要删除该耗材记录吗？')) {
       await ApiService.deleteConsumable(id);
+      logAction('ASSET_DELETE', `删除耗材记录 ID:${id}`, 'WARNING');
       await refreshData();
     }
   };
 
   const handleSaveLocation = async (locData) => {
     await ApiService.saveLocation(locData);
+    logAction('ASSET_CREATE', `新增收纳空间位置【${locData.name}】`, 'SUCCESS');
     await refreshData();
   };
 
   const handleResetData = async () => {
     if (window.confirm('确定要重置为默认演示数据吗？自定义数据将被覆盖。')) {
       await ApiService.resetToDemoData();
+      logAction('DATA_CLEAR', '重置初始化全库为默认演示数据', 'WARNING');
       await refreshData();
     }
   };
@@ -161,6 +185,7 @@ export function AssetProvider({ children }) {
   const handleClearAllData = async () => {
     if (window.confirm('⚠️ 危险警告：确定要一键彻底清空所有资产、快消耗材与收纳位置记录吗？此操作无法撤销！')) {
       await ApiService.clearAllData();
+      logAction('DATA_CLEAR', '⚠️ 触发危险操作：一键彻底清空全库资产与位置档案', 'WARNING');
       await refreshData();
     }
   };
@@ -203,12 +228,15 @@ export function AssetProvider({ children }) {
     if (isValid || password === 'admin') {
       setIsAuthenticated(true);
       localStorage.setItem('ASSET_VAULT_AUTH', 'true');
+      logAction('AUTH_LOGIN', '成功输入访问密码解锁进入系统', 'SUCCESS');
       return true;
     }
+    logAction('AUTH_LOGIN', '尝试输入访问密码失败：守护密码校验错误', 'FAILED');
     return false;
   };
 
   const logout = () => {
+    logAction('AUTH_LOGOUT', '主动点击锁定退出安全会话', 'SUCCESS');
     setIsAuthenticated(false);
     localStorage.removeItem('ASSET_VAULT_AUTH');
   };
@@ -235,8 +263,10 @@ export function AssetProvider({ children }) {
     masterPasswordHash,
     handleChangePassword,
     currentUser,
-    handleUpdateUser
-  }), [assets, consumables, allItems, locations, categories, loading, stats, masterPasswordHash, currentUser]);
+    handleUpdateUser,
+    auditLogs,
+    refreshAuditLogs
+  }), [assets, consumables, allItems, locations, categories, loading, stats, masterPasswordHash, currentUser, auditLogs]);
 
   // 2. UI Store Payload
   const uiValue = useMemo(() => ({
@@ -260,12 +290,14 @@ export function AssetProvider({ children }) {
     setIsSettingsOpen,
     isSecurityModalOpen,
     setIsSecurityModalOpen,
+    isAuditLogOpen,
+    setIsAuditLogOpen,
     isAuthenticated,
     login,
     logout
   }), [
     activeTab, searchQuery, selectedCategory, selectedLocationId, theme,
-    detailAsset, editingAsset, editingConsumable, isSettingsOpen, isSecurityModalOpen, isAuthenticated
+    detailAsset, editingAsset, editingConsumable, isSettingsOpen, isSecurityModalOpen, isAuditLogOpen, isAuthenticated
   ]);
 
   return (
