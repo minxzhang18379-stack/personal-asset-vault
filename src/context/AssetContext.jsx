@@ -223,22 +223,35 @@ export function AssetProvider({ children }) {
     };
   }, [assets, consumables]);
 
-  const login = async (username, password) => {
-    // 如果传入了用户名，自动更新当前活动成员身份
-    if (username && username.trim()) {
-      handleUpdateUser({ name: username.trim() });
+  const login = async (usernameOrEmail, password) => {
+    // 智能解析输入的账号与邮箱关联双向绑定
+    if (usernameOrEmail && usernameOrEmail.trim()) {
+      const inputStr = usernameOrEmail.trim();
+      const isEmailInput = inputStr.includes('@');
+      if (isEmailInput) {
+        handleUpdateUser({ 
+          email: inputStr, 
+          name: currentUser?.name || inputStr.split('@')[0] 
+        });
+      } else {
+        handleUpdateUser({ 
+          name: inputStr,
+          email: currentUser?.email || `${inputStr.toLowerCase().replace(/\s+/g, '')}@gmail.com`
+        });
+      }
     }
 
-    // 判断密码 (如果传入单一参数作为 password)
-    const passToCheck = password !== undefined ? password : username;
+    // 校验密码
+    const passToCheck = password !== undefined ? password : usernameOrEmail;
     const isValid = await verifyPasswordHash(passToCheck, masterPasswordHash);
     if (isValid || passToCheck === 'admin') {
       setIsAuthenticated(true);
       localStorage.setItem('ASSET_VAULT_AUTH', 'true');
-      logAction('AUTH_LOGIN', `用户【${username || currentUser?.name || '管理员'}】成功通过校验解锁进入系统`, 'SUCCESS');
+      const boundUserStr = `${currentUser?.name || usernameOrEmail} <${currentUser?.email || '已绑定邮箱'}>`;
+      logAction('AUTH_LOGIN', `关联账户【${boundUserStr}】成功通过安全校验解锁进入金库`, 'SUCCESS');
       return true;
     }
-    logAction('AUTH_LOGIN', `用户【${username || '未知用户'}】尝试解锁失败：守护密码校验错误`, 'FAILED');
+    logAction('AUTH_LOGIN', `解密失败：账户【${usernameOrEmail || '未知用户'}】密码校验错误`, 'FAILED');
     return false;
   };
 
