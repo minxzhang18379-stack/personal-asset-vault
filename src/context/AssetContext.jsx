@@ -166,10 +166,7 @@ export function AssetProvider({ children }) {
   const [currentUser, setCurrentUser] = useState(() => {
     try {
       const savedUser = localStorage.getItem('ASSET_VAULT_CURRENT_USER');
-      if (savedUser) {
-        const parsed = JSON.parse(savedUser);
-        return { ...parsed, passwordHash: '8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918' };
-      }
+      if (savedUser) return JSON.parse(savedUser);
     } catch (e) {}
     return {
       id: 'usr-1',
@@ -178,7 +175,8 @@ export function AssetProvider({ children }) {
       email: 'minxzhang18379@gmail.com',
       role: 'master',
       roleName: '主超级管理员',
-      passwordHash: '8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918'
+      passwordHash: '8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918',
+      isDefaultPassword: true
     };
   });
 
