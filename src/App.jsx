@@ -10,9 +10,10 @@ import AssetFormModal from './components/AssetFormModal';
 import SettingsModal from './components/SettingsModal';
 import UserSecurityModal from './components/UserSecurityModal';
 import AuditLogModal from './components/AuditLogModal';
+import PasswordRecoveryModal from './components/PasswordRecoveryModal';
 import { 
   LayoutDashboard, Package, Box, MapPin, BarChart3, 
-  Settings, Lock, Search, ShieldCheck, Diamond, Sparkles, LogOut, Menu, X, AlertCircle, User 
+  Settings, Lock, Search, ShieldCheck, Diamond, Sparkles, LogOut, Menu, X, AlertCircle, User, ShieldAlert 
 } from 'lucide-react';
 
 function MainAppContent() {
@@ -20,6 +21,7 @@ function MainAppContent() {
     activeTab, setActiveTab, setIsSettingsOpen, 
     isSecurityModalOpen, setIsSecurityModalOpen,
     isAuditLogOpen, setIsAuditLogOpen,
+    isRecoveryOpen, setIsRecoveryOpen,
     isAuthenticated, login, logout, stats, currentUser 
   } = useAssets();
 
@@ -107,6 +109,16 @@ function MainAppContent() {
             >
               登录
             </button>
+
+            <div className="pt-2 text-center">
+              <button
+                type="button"
+                onClick={() => setIsRecoveryOpen(true)}
+                className="text-xs text-rose-400/80 hover:text-rose-300 underline font-medium transition-colors"
+              >
+                忘记密码？应急强制重置
+              </button>
+            </div>
           </form>
         </div>
       </div>
@@ -249,6 +261,10 @@ function MainAppContent() {
       <AuditLogModal 
         isOpen={isAuditLogOpen} 
         onClose={() => setIsAuditLogOpen(false)} 
+      />
+      <PasswordRecoveryModal 
+        isOpen={isRecoveryOpen} 
+        onClose={() => setIsRecoveryOpen(false)} 
       />
     </div>
   );

@@ -47,6 +47,63 @@ export function AssetProvider({ children }) {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isSecurityModalOpen, setIsSecurityModalOpen] = useState(false);
   const [isAuditLogOpen, setIsAuditLogOpen] = useState(false);
+  const [isRecoveryOpen, setIsRecoveryOpen] = useState(false);
+
+  // 安全恢复密钥存储 (Master Recovery Key)
+  const [masterRecoveryKey] = useState(() => {
+    return localStorage.getItem('ASSET_VAULT_RECOVERY_KEY') || 'RECOVERY-2026-KEY';
+  });
+
+  // 应急强制重置密码方法
+  const handleForceResetPassword = async (accountInput, inputRecoveryKey, newPassword) => {
+    if (!accountInput || !accountInput.trim()) {
+      throw new Error('请输入要重置的账号或关联邮箱');
+    }
+    if (!inputRecoveryKey || inputRecoveryKey.trim() !== masterRecoveryKey) {
+      logAction('SECURITY_ALERT', `尝试强制重置密码失败：恢复密钥错误【${inputRecoveryKey}】`, 'FAILED');
+      throw new Error('安全恢复密钥校验错误，无法执行强制重置');
+    }
+    if (!newPassword || newPassword.length < 4) {
+      throw new Error('新密码不能少于 4 位字符');
+    }
+
+    const inputStr = accountInput.trim().toLowerCase();
+    let targetUser = userAccounts.find(acc => 
+      (acc.username && acc.username.toLowerCase() === inputStr) ||
+      (acc.name && acc.name.toLowerCase() === inputStr) ||
+      (acc.email && acc.email.toLowerCase() === inputStr)
+    );
+
+    const newHash = await hashPassword(newPassword);
+
+    if (targetUser) {
+      const updatedUser = { ...targetUser, passwordHash: newHash };
+      const updatedAccounts = userAccounts.map(acc => acc.id === targetUser.id ? updatedUser : acc);
+      saveAccountsList(updatedAccounts);
+      if (currentUser?.id === targetUser.id) {
+        setCurrentUser(updatedUser);
+        localStorage.setItem('ASSET_VAULT_CURRENT_USER', JSON.stringify(updatedUser));
+      }
+      logAction('SECURITY_AUTH', `使用应急恢复密钥强制重置了账户【${targetUser.name} <${targetUser.email}>】的专属密码`, 'WARNING');
+    } else {
+      // 账户不存在时强制为其注册开通
+      const isEmail = inputStr.includes('@');
+      const newAccName = isEmail ? inputStr.split('@')[0] : accountInput.trim();
+      const newAccEmail = isEmail ? inputStr : `${inputStr.replace(/\s+/g, '')}@gmail.com`;
+      const newAcc = {
+        id: `usr-${Date.now()}`,
+        name: newAccName,
+        username: newAccName.toLowerCase(),
+        email: newAccEmail,
+        role: 'master',
+        roleName: '超级管理员',
+        passwordHash: newHash
+      };
+      saveAccountsList([...userAccounts, newAcc]);
+      logAction('SECURITY_AUTH', `使用应急恢复密钥强制创建并重置了新账户【${newAcc.name}】的密码`, 'WARNING');
+    }
+    return true;
+  };
 
   // 180 天合规日志 State
   const [auditLogs, setAuditLogs] = useState(() => getAuditLogs());
@@ -365,6 +422,7 @@ export function AssetProvider({ children }) {
     userAccounts,
     handleAddUserAccount,
     handleChangePassword,
+    handleForceResetPassword,
     currentUser,
     handleUpdateUser,
     auditLogs,
@@ -395,12 +453,14 @@ export function AssetProvider({ children }) {
     setIsSecurityModalOpen,
     isAuditLogOpen,
     setIsAuditLogOpen,
+    isRecoveryOpen,
+    setIsRecoveryOpen,
     isAuthenticated,
     login,
     logout
   }), [
     activeTab, searchQuery, selectedCategory, selectedLocationId, theme,
-    detailAsset, editingAsset, editingConsumable, isSettingsOpen, isSecurityModalOpen, isAuditLogOpen, isAuthenticated
+    detailAsset, editingAsset, editingConsumable, isSettingsOpen, isSecurityModalOpen, isAuditLogOpen, isRecoveryOpen, isAuthenticated
   ]);
 
   return (
